@@ -37,7 +37,7 @@ export default class HandCard extends Phaser.GameObjects.Image {
 
 	assignValue(value: number) {
 		let frame: string;
-		if (0 < value && value < 52) {
+		if (0 <= value && value < 52) {
 			this.suit = suitOrdering[Math.floor(value / 13)];
 			this.faceValue = (value % 13) + 2; // 2,...,10,J,Q,K,A
 			frame = this.suit + " " + (this.faceValue - 1).toString() + ".png";

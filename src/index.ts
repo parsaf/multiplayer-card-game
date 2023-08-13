@@ -28,8 +28,9 @@ window.addEventListener('load', function () {
 		backgroundColor: "#2f2f2f",
 		type: Phaser.AUTO,
 		scale: {
+			parent: 'phaser-example',
 			mode: Phaser.Scale.ScaleModes.FIT,
-			autoCenter: Phaser.Scale.Center.CENTER_BOTH
+			autoCenter: Phaser.Scale.Center.CENTER_BOTH,
 		},
 		scene: [Boot, Preload, Level]
 	});
