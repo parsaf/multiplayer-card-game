@@ -1,0 +1,71 @@
+{
+    "id": "a6cac4e5-d0e2-4867-9ddb-68b55d38fcdf",
+    "settings": {
+        "createMethodName": "",
+        "preloadMethodName": "",
+        "compilerOutputLanguage": "TYPE_SCRIPT",
+        "exportClass": true,
+        "autoImport": true,
+        "generateAwakeHandler": false,
+        "compilerInsertSpaces": false,
+        "compilerTabSize": 4,
+        "borderWidth": 720,
+        "borderHeight": 1280,
+        "borderX": 0,
+        "borderY": 0
+    },
+    "sceneType": "PREFAB",
+    "displayList": [
+        {
+            "unlock": [
+                "x",
+                "y"
+            ],
+            "type": "Container",
+            "id": "49401cff-61ea-4518-a9be-7a9a1946ffcd",
+            "label": "team_mate_1",
+            "list": [
+                {
+                    "type": "Image",
+                    "id": "8f82c563-cb5d-479c-a088-05ab7a43db80",
+                    "label": "back_Blue_1_png_4",
+                    "texture": {
+                        "key": "sprite",
+                        "frame": "Back Blue 1.png"
+                    },
+                    "x": 72.51235364355163,
+                    "y": 47.07857127616366
+                },
+                {
+                    "type": "Image",
+                    "id": "75d7401a-ac5c-4fd4-b054-7fcf8f458566",
+                    "label": "back_Blue_1_png_5",
+                    "texture": {
+                        "key": "sprite",
+                        "frame": "Back Blue 1.png"
+                    },
+                    "x": 54.4612862912567,
+                    "y": 46.96437449881991
+                },
+                {
+                    "type": "Image",
+                    "id": "66b18090-070c-49df-9178-d7e24031b7d8",
+                    "label": "back_Blue_1_png_6",
+                    "texture": {
+                        "key": "sprite",
+                        "frame": "Back Blue 1.png"
+                    },
+                    "x": 35.512352689877304,
+                    "y": 48.07857127616366
+                }
+            ],
+            "x": 0,
+            "y": 0
+        }
+    ],
+    "meta": {
+        "app": "Phaser Editor 2D - Scene Editor",
+        "url": "https://phasereditor2d.com",
+        "contentType": "phasereditor2d.core.scene.SceneContentType"
+    }
+}

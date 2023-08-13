@@ -1,0 +1,93 @@
+{
+    "id": "b685c081-ee5f-4b67-b583-415922c9e2c4",
+    "sceneType": "SCENE",
+    "settings": {
+        "snapEnabled": true,
+        "snapWidth": 1,
+        "snapHeight": 1,
+        "exportClass": true,
+        "autoImport": true,
+        "preloadPackFiles": [],
+        "createMethodName": "editorCreate",
+        "sceneKey": "Level",
+        "compilerOutputLanguage": "TYPE_SCRIPT",
+        "borderWidth": 720,
+        "borderHeight": 1280
+    },
+    "displayList": [
+        {
+            "type": "Image",
+            "id": "7a0494f5-5969-482e-bbdf-4e16d24d07ef",
+            "label": "carpet",
+            "texture": {
+                "key": "carpet"
+            },
+            "x": 360,
+            "y": 640,
+            "scaleX": 0.8682609620551739,
+            "scaleY": 1.1531963897024449
+        },
+        {
+            "prefabId": "327ae967-d364-4271-b6a7-2efaa721d953",
+            "id": "c22c9a68-2180-435d-becd-3129cb8436b0",
+            "unlock": [
+                "x",
+                "y"
+            ],
+            "label": "opponent_2",
+            "x": 305,
+            "y": 10
+        },
+        {
+            "prefabId": "a6cac4e5-d0e2-4867-9ddb-68b55d38fcdf",
+            "id": "edbf8142-cb31-4cd8-8285-1316942506fc",
+            "unlock": [
+                "x",
+                "y"
+            ],
+            "label": "team_mate_1",
+            "x": 10,
+            "y": 10
+        },
+        {
+            "prefabId": "a6cac4e5-d0e2-4867-9ddb-68b55d38fcdf",
+            "id": "826b112d-6abb-4aee-ac66-640dc72797fe",
+            "unlock": [
+                "x",
+                "y"
+            ],
+            "label": "team_mate_2",
+            "x": 600,
+            "y": 10
+        },
+        {
+            "prefabId": "327ae967-d364-4271-b6a7-2efaa721d953",
+            "id": "9cb95354-fad7-4549-9380-4f48fa3218aa",
+            "unlock": [
+                "x",
+                "y"
+            ],
+            "label": "opponent_1",
+            "x": 10,
+            "y": 592
+        },
+        {
+            "prefabId": "327ae967-d364-4271-b6a7-2efaa721d953",
+            "id": "5f9eb8ed-1598-4b31-885c-ca87aec50e04",
+            "unlock": [
+                "x",
+                "y"
+            ],
+            "label": "opponent_3",
+            "x": 600,
+            "y": 592
+        }
+    ],
+    "plainObjects": [],
+    "meta": {
+        "app": "Phaser Editor 2D - Scene Editor",
+        "url": "https://phasereditor2d.com",
+        "contentType": "phasereditor2d.core.scene.SceneContentType",
+        "version": 4
+    }
+}
