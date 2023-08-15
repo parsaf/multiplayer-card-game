@@ -116,7 +116,6 @@ export default class Level extends Phaser.Scene {
 		this.add.existing(this.playerHand);
 		for (const val of handVals) {
 			let card = new HandCard(this);
-			card.setOrigin(0.5, 1);
 			card.assignValue(val);
 			card.setInteractive({draggable: true});
             this.add.existing(card);
@@ -127,8 +126,9 @@ export default class Level extends Phaser.Scene {
 
 	////////// card drag event handlers //////////
 
-	dragStartHandler(pointer: Phaser.Input.Pointer, obj: Phaser.GameObjects.GameObject) {
+	dragStartHandler(pointer: Phaser.Input.Pointer, obj: Phaser.GameObjects.Image) {
 		console.log("drag start");
+		obj.setOrigin(0.5, 1);
 		this.children.bringToTop(obj)
 		this.dropZone.setVisible(true);
 		this.tweens.add({
@@ -149,27 +149,20 @@ export default class Level extends Phaser.Scene {
 
 	dragEndHandler(pointer: Phaser.Input.Pointer, obj: Phaser.GameObjects.Image, dropped: boolean) {
 		console.log("drag end", dropped);
-		let config: Phaser.Types.Tweens.TweenBuilderConfig = {
-			targets: obj,
-			displayWidth: CARD_WIDTH,
-			displayHeight: CARD_HEIGHT,
-			duration: 150,
-		};
-		if (!dropped && obj.input) {
-			this.tweens.add({
-				...config,
-				x: obj.input.dragStartX,
-				y: obj.input.dragStartY,
-			});
-		} else {
+
+		obj.setOrigin(0.5, 0.5);
+		obj.setDisplaySize(CARD_WIDTH, CARD_HEIGHT);
+
+		if (dropped) {
 			obj.disableInteractive();
-			obj.setDisplaySize(CARD_WIDTH, CARD_HEIGHT);
+			this.playerHand.remove(obj);
 			this.cardPile.add(obj, {
 				align: 'center',
 				expand: false,
 			});
 			this.cardPile.layout();
 		}
+		this.playerHand.layout();
 		this.dropZone.setVisible(false);
 	}
 
