@@ -81,6 +81,18 @@
             "label": "opponent_3",
             "x": 600,
             "y": 592
+        },
+        {
+            "prefabId": "168abfe6-8f21-44b9-baae-d2a81e595dcb",
+            "id": "f8696f12-a5ce-460c-b62a-ddcef43a74f1",
+            "unlock": [
+                "x",
+                "y"
+            ],
+            "label": "dropZone",
+            "scope": "CLASS",
+            "x": 360,
+            "y": 320
         }
     ],
     "plainObjects": [],

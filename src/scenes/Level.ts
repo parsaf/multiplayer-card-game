@@ -6,8 +6,10 @@
 import Phaser from "phaser";
 import RedPlayer from "./RedPlayer";
 import BluePlayer from "./BluePlayer";
+import DropZonePrefab from "./DropZonePrefab";
 /* START-USER-IMPORTS */
-import HandCard from "./HandCard";
+import HandCard, {CARD_HEIGHT, CARD_WIDTH} from "./HandCard";
+import { GridSizer } from 'phaser3-rex-plugins/templates/ui/ui-components.js';
 /* END-USER-IMPORTS */
 
 export default class Level extends Phaser.Scene {
@@ -16,7 +18,6 @@ export default class Level extends Phaser.Scene {
 		super("Level");
 
 		/* START-USER-CTR-CODE */
-		this.playerHand = [];
 		/* END-USER-CTR-CODE */
 	}
 
@@ -47,34 +48,129 @@ export default class Level extends Phaser.Scene {
 		const opponent_3 = new RedPlayer(this, 600, 592);
 		this.add.existing(opponent_3);
 
+		// dropZone
+		const dropZone = new DropZonePrefab(this, 360, 320);
+		this.add.existing(dropZone);
+
+		this.dropZone = dropZone;
+
 		this.events.emit("scene-awake");
 	}
 
-	/* START-USER-CODE */
-	playerHand: HandCard[];
+	private dropZone!: DropZonePrefab;
 
+	/* START-USER-CODE */
+	private playerHand!: GridSizer;
+	private cardPile!: GridSizer;
 	// Write your code here
 
 	create() {
 
 		this.editorCreate();
 
-		const cardWidth = 71;
-		const cardHeight = 94;
-        const padding = 5;
-        const totalWidth = 9 * cardWidth + (9 - 1) * padding;
-        let x = (this.game.config.width as number - totalWidth) / 2 + cardWidth / 2;
-		const y = this.game.config.height as number - 10 - (cardHeight / 2);
+        this.createPlayerHand();
 
-		var nums = Phaser.Utils.Array.NumberArray(0, 53) as number[];
-        Phaser.Utils.Array.Shuffle(nums);
-		for (let i = 0; i < 9; i++) {
-			let card = new HandCard(this, x, y);
-			card.assignValue(nums[i]);
-			this.playerHand.push(card);
-            this.add.existing(card); // Add the card to the scene
-			x += cardWidth + padding;
+		this.input.on("dragstart", this.dragStartHandler, this);
+		this.input.on("drag", this.dragHandler, this);
+		this.input.on("dragend", this.dragEndHandler, this);
+
+		this.cardPile = new GridSizer(this, {
+			x: Math.floor(this.dropZone.x),
+			y: Math.floor(this.dropZone.y),
+			column: 3,
+			row: 2,
+			space: {
+				column: 5,
+				row: 5,
+			},
+		})
+		this.add.existing(this.cardPile);
+
+	}
+
+	createPlayerHand() {
+		// const padding = 5;
+        // const totalWidth = 9 * CARD_WIDTH + (9 - 1) * padding;
+        // let x = (this.game.config.width as number - totalWidth) / 2 + CARD_WIDTH / 2;
+		// const y = this.game.config.height as number - 10 - (CARD_HEIGHT / 2);
+
+		var handVals = Phaser.Utils.Array.NumberArray(0, 53) as number[];
+        handVals = Phaser.Utils.Array.Shuffle(handVals).slice(0, 9).sort((a: number, b: number) => b - a);
+		console.log("card vals", handVals);
+		// for (const val of handVals) {
+		// 	let card = new HandCard(this, x, y);
+		// 	card.setOrigin(0.5, 1);
+		// 	card.assignValue(val);
+		// 	card.setInteractive({draggable: true});
+		// 	this.playerHand.push(card);
+        //     this.add.existing(card); // Add the card to the scene
+		// 	x += CARD_WIDTH + padding;
+		// }
+		this.playerHand = new GridSizer(this, {
+			x: Math.floor(this.game.config.width as number / 2),
+			y: this.game.config.height as number - 5 - Math.floor(CARD_HEIGHT / 2),
+			column: 9,
+			row: 1,
+			space:{column: 5},
+		});
+		this.add.existing(this.playerHand);
+		for (const val of handVals) {
+			let card = new HandCard(this);
+			card.setOrigin(0.5, 1);
+			card.assignValue(val);
+			card.setInteractive({draggable: true});
+            this.add.existing(card);
+			this.playerHand.add(card);
 		}
+		this.playerHand.layout();
+	}
+
+	////////// card drag event handlers //////////
+
+	dragStartHandler(pointer: Phaser.Input.Pointer, obj: Phaser.GameObjects.GameObject) {
+		console.log("drag start");
+		this.children.bringToTop(obj)
+		this.dropZone.setVisible(true);
+		this.tweens.add({
+			targets: obj,
+			x: pointer.x,
+			y: pointer.y,
+			displayWidth: CARD_WIDTH * 2,
+			displayHeight: CARD_HEIGHT * 2,
+			duration: 150,
+		});
+	}
+
+	dragHandler(pointer: Phaser.Input.Pointer, obj: Phaser.GameObjects.Image) {
+		console.log("drag");
+		obj.x = pointer.x;
+		obj.y = pointer.y;
+	}
+
+	dragEndHandler(pointer: Phaser.Input.Pointer, obj: Phaser.GameObjects.Image, dropped: boolean) {
+		console.log("drag end", dropped);
+		let config: Phaser.Types.Tweens.TweenBuilderConfig = {
+			targets: obj,
+			displayWidth: CARD_WIDTH,
+			displayHeight: CARD_HEIGHT,
+			duration: 150,
+		};
+		if (!dropped && obj.input) {
+			this.tweens.add({
+				...config,
+				x: obj.input.dragStartX,
+				y: obj.input.dragStartY,
+			});
+		} else {
+			obj.disableInteractive();
+			obj.setDisplaySize(CARD_WIDTH, CARD_HEIGHT);
+			this.cardPile.add(obj, {
+				align: 'center',
+				expand: false,
+			});
+			this.cardPile.layout();
+		}
+		this.dropZone.setVisible(false);
 	}
 
 	/* END-USER-CODE */
