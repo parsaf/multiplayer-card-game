@@ -89,23 +89,9 @@ export default class Level extends Phaser.Scene {
 	}
 
 	createPlayerHand() {
-		// const padding = 5;
-        // const totalWidth = 9 * CARD_WIDTH + (9 - 1) * padding;
-        // let x = (this.game.config.width as number - totalWidth) / 2 + CARD_WIDTH / 2;
-		// const y = this.game.config.height as number - 10 - (CARD_HEIGHT / 2);
-
 		var handVals = Phaser.Utils.Array.NumberArray(0, 53) as number[];
         handVals = Phaser.Utils.Array.Shuffle(handVals).slice(0, 9).sort((a: number, b: number) => b - a);
 		console.log("card vals", handVals);
-		// for (const val of handVals) {
-		// 	let card = new HandCard(this, x, y);
-		// 	card.setOrigin(0.5, 1);
-		// 	card.assignValue(val);
-		// 	card.setInteractive({draggable: true});
-		// 	this.playerHand.push(card);
-        //     this.add.existing(card); // Add the card to the scene
-		// 	x += CARD_WIDTH + padding;
-		// }
 		this.playerHand = new GridSizer(this, {
 			x: Math.floor(this.game.config.width as number / 2),
 			y: this.game.config.height as number - 5 - Math.floor(CARD_HEIGHT / 2),
