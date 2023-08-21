@@ -2,7 +2,6 @@
 // You can write more code here
 
 const SERVER_URL = "http://localhost:8000";
-const USER_ID = "e2432309-9a1c-4b87-a844-91d404cd2fd1"; // TODO remove
 const TIMEOUT = 1000;
 
 /* START OF COMPILED CODE */
@@ -15,6 +14,10 @@ import DropZonePrefab from "./DropZonePrefab";
 import HandCard, { CARD_HEIGHT, CARD_WIDTH } from "./HandCard";
 import { GridSizer } from 'phaser3-rex-plugins/templates/ui/ui-components.js';
 import { io, Socket } from "socket.io-client";
+import qs from "qs";
+import fetchBuilder from "fetch-retry";
+
+const fetchRetry = fetchBuilder(fetch);
 
 interface ClientEvents {
     "ready": (payload: playerReadyPayload, callback: (res?: SocketError) => void) => void;
@@ -94,6 +97,7 @@ export default class Level extends Phaser.Scene {
 	private socket!: Socket<ServerEvents, ClientEvents>;
 	private cardVals!: number[];
 	private handDealt: boolean = false;
+	private playerId!: string;
 
 	create() {
 		this.editorCreate();
@@ -106,14 +110,25 @@ export default class Level extends Phaser.Scene {
             // transports: ["websocket"],
 		});
 		
-		// tell server player is ready
-		this.socket.emit("ready", { playerId: USER_ID }, (err) => {
-			console.log("ready emitted");
-			if (err) {
-				console.error(err);
-				throw Error(err.error);
+		fetchRetry(SERVER_URL + "/join?" + qs.stringify({name: "Parsa"})).then((res) => {
+			console.log("made request");
+			if (!res.ok) {
+				throw new Error(`HTTP error! Status: ${res.status}`);
 			}
+			return res.json();
+		}).then((json) => {
+			console.log("json parsed", json["playerId"]);
+			this.playerId = json["playerId"];
+			// tell server player is ready
+			this.socket.emit("ready", { playerId: this.playerId }, (err) => {
+				console.log("ready emitted");
+				if (err) {
+					console.error(err);
+					throw Error(err.error);
+				}
+			});
 		});
+		
 		// TODO get game state
 		// this.socket.on("connect", () => {
 		// });

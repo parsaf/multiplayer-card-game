@@ -13,8 +13,10 @@
   "author": "Phaser Editor 2D <developers@phasereditor2d.com> (https://phasereditor2d.com/)",
   "license": "MIT",
   "dependencies": {
+    "fetch-retry": "^5.0.6",
     "phaser": "^3.60.0",
     "phaser3-rex-plugins": "^1.60.4",
+    "qs": "^6.11.2",
     "socket.io-client": "^4.7.2"
   },
   "devDependencies": {

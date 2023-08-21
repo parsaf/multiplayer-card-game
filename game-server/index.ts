@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 import express from "express";
 import http from "http";
 import { Server } from "socket.io";
+import cors from "cors";
 import { playerReadyHandler, playerJoinHandler } from "./handlers";
 
 dotenv.config();
@@ -12,7 +13,7 @@ const PORT = process.env.PORT;
 
 
 // joining the party
-app.get("/join", playerJoinHandler);
+app.get("/join", cors(), playerJoinHandler);
 
 
 io.on("connection", (socket) => {

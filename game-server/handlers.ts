@@ -46,8 +46,11 @@ export const playerReadyHandler: types.ClientEvents["ready"] = function(payload,
     const player = players.get(playerId);
     if (player != undefined) {
         if (player.ready) {
+            console.log("player already read");
+            callback();
             return;
         } else if (gameStarted) {
+            console.log("game already started");
             callback({
                 error: "game already started",
                 errorType: "rejected",
@@ -56,8 +59,10 @@ export const playerReadyHandler: types.ClientEvents["ready"] = function(payload,
         }
         player.ready = true;
         sockets.set(playerId, socket);
+        console.log("player set ready", sockets.size);
 
         if (sockets.size == MAX_PLAYER_COUNT) {
+            console.log("ready to start game");
             startGame();
         }
        callback();
