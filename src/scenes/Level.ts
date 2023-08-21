@@ -12,35 +12,13 @@ import BluePlayer from "./BluePlayer";
 import DropZonePrefab from "./DropZonePrefab";
 /* START-USER-IMPORTS */
 import HandCard, { CARD_HEIGHT, CARD_WIDTH } from "./HandCard";
+import type { ServerEvents, ClientEvents } from "../events/ServerEvents";
 import { GridSizer } from 'phaser3-rex-plugins/templates/ui/ui-components.js';
 import { io, Socket } from "socket.io-client";
 import qs from "qs";
 import fetchBuilder from "fetch-retry";
 
 const fetchRetry = fetchBuilder(fetch);
-
-interface ClientEvents {
-    "ready": (payload: playerReadyPayload, callback: (res?: SocketError) => void) => void;
-}
-
-interface ServerEvents {
-    "start-game": (hand: number[], callback: () => void) => void;
-}
-
-interface SocketError {
-    error: string;
-    errorType: "rejected" | "server";
-}
-
-interface ServerSuccess {
-    data: Object;
-}
-
-type ServerResponse<T> = SocketError | ServerSuccess;
-
-interface playerReadyPayload {
-    playerId: string;
-}
 
 /* END-USER-IMPORTS */
 
@@ -57,8 +35,8 @@ export default class Level extends Phaser.Scene {
 
 		// carpet
 		const carpet = this.add.image(360, 640, "carpet");
-		carpet.scaleX = 0.8682609620551739;
-		carpet.scaleY = 1.1531963897024449;
+		carpet.scaleX = 0.87;
+		carpet.scaleY = 1.15;
 
 		// opponent_2
 		const opponent_2 = new RedPlayer(this, 305, 10);
@@ -109,7 +87,7 @@ export default class Level extends Phaser.Scene {
 			timeout: TIMEOUT * 5,
             // transports: ["websocket"],
 		});
-		
+
 		fetchRetry(SERVER_URL + "/join?" + qs.stringify({name: "Parsa"})).then((res) => {
 			console.log("made request");
 			if (!res.ok) {
@@ -128,7 +106,7 @@ export default class Level extends Phaser.Scene {
 				}
 			});
 		});
-		
+
 		// TODO get game state
 		// this.socket.on("connect", () => {
 		// });
