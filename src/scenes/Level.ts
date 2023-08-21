@@ -1,6 +1,10 @@
 
 // You can write more code here
 
+const SERVER_URL = "http://localhost:8000";
+const USER_ID = "e2432309-9a1c-4b87-a844-91d404cd2fd1"; // TODO remove
+const TIMEOUT = 1000;
+
 /* START OF COMPILED CODE */
 
 import Phaser from "phaser";
@@ -8,8 +12,33 @@ import RedPlayer from "./RedPlayer";
 import BluePlayer from "./BluePlayer";
 import DropZonePrefab from "./DropZonePrefab";
 /* START-USER-IMPORTS */
-import HandCard, {CARD_HEIGHT, CARD_WIDTH} from "./HandCard";
+import HandCard, { CARD_HEIGHT, CARD_WIDTH } from "./HandCard";
 import { GridSizer } from 'phaser3-rex-plugins/templates/ui/ui-components.js';
+import { io, Socket } from "socket.io-client";
+
+interface ClientEvents {
+    "ready": (payload: playerReadyPayload, callback: (res?: SocketError) => void) => void;
+}
+
+interface ServerEvents {
+    "start-game": (hand: number[], callback: () => void) => void;
+}
+
+interface SocketError {
+    error: string;
+    errorType: "rejected" | "server";
+}
+
+interface ServerSuccess {
+    data: Object;
+}
+
+type ServerResponse<T> = SocketError | ServerSuccess;
+
+interface playerReadyPayload {
+    playerId: string;
+}
+
 /* END-USER-IMPORTS */
 
 export default class Level extends Phaser.Scene {
@@ -62,18 +91,72 @@ export default class Level extends Phaser.Scene {
 	/* START-USER-CODE */
 	private playerHand!: GridSizer;
 	private cardPile!: GridSizer;
-	// Write your code here
+	private socket!: Socket<ServerEvents, ClientEvents>;
+	private cardVals!: number[];
+	private handDealt: boolean = false;
 
 	create() {
-
 		this.editorCreate();
+		console.log("create");
 
-        this.createPlayerHand();
-
+		this.socket = io(SERVER_URL, {
+			retries: 10,
+			// forceNew: true,
+			timeout: TIMEOUT * 5,
+            // transports: ["websocket"],
+		});
+		
+		// tell server player is ready
+		this.socket.emit("ready", { playerId: USER_ID }, (err) => {
+			console.log("ready emitted");
+			if (err) {
+				console.error(err);
+				throw Error(err.error);
+			}
+		});
+		// TODO get game state
+		// this.socket.on("connect", () => {
+		// });
 		this.input.on("dragstart", this.dragStartHandler, this);
 		this.input.on("drag", this.dragHandler, this);
 		this.input.on("dragend", this.dragEndHandler, this);
 
+		this.startGameHandler();
+
+	}
+
+	update(time: number, delta: number): void {
+		if (this.cardVals && !this.handDealt) {
+			console.log("createPlayerHand ready");
+			this.dealPlayerHand(this.cardVals);
+		}
+	}
+
+	// async emitWithRetryAsync<T>(event: keyof ClientEvents, arg: any, retry=3) {
+	// 	let hasErr = false;
+	// 	try {
+	// 		const response = await this.socket.timeout(TIMEOUT).emitWithAck(event, arg);
+	// 		hasErr = "error" in response;
+	// 	} catch (err) {
+	// 		hasErr = true;
+	// 	}
+	// 	if (hasErr && retry > 0) {
+
+	// 	}
+	// }
+
+	// emitWithRetry<T>(event: keyof ClientEvents, arg: any, retry=3) {
+	// 	this.socket.timeout(TIMEOUT).emit(event, arg, (err, res: ServerResponse<T>) => {
+	// 		if ((err || "error" in res) && retry > 0) {
+	// 			console.log("retries left ", retry, res, err);
+	// 			this.emitWithRetry(event, arg, retry - 1);
+	// 		}
+	// 	});
+	// }
+
+	dealPlayerHand(handVals: number[]) {
+		console.log("card vals", handVals);
+		handVals.sort((a, b) => b - a);
 		this.cardPile = new GridSizer(this, {
 			x: Math.floor(this.dropZone.x),
 			y: Math.floor(this.dropZone.y),
@@ -85,13 +168,6 @@ export default class Level extends Phaser.Scene {
 			},
 		})
 		this.add.existing(this.cardPile);
-
-	}
-
-	createPlayerHand() {
-		var handVals = Phaser.Utils.Array.NumberArray(0, 53) as number[];
-        handVals = Phaser.Utils.Array.Shuffle(handVals).slice(0, 9).sort((a: number, b: number) => b - a);
-		console.log("card vals", handVals);
 		this.playerHand = new GridSizer(this, {
 			x: Math.floor(this.game.config.width as number / 2),
 			y: this.game.config.height as number - 5 - Math.floor(CARD_HEIGHT / 2),
@@ -108,6 +184,17 @@ export default class Level extends Phaser.Scene {
 			this.playerHand.add(card);
 		}
 		this.playerHand.layout();
+		this.handDealt = true;
+	}
+
+	////////// socket event handlers //////////
+	startGameHandler() {
+		console.log("start game handler");
+		this.socket.on("start-game", (hand, callback) => {
+			this.cardVals = hand;
+			console.log("got hand");
+			callback();
+		});
 	}
 
 	////////// card drag event handlers //////////
