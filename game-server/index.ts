@@ -8,12 +8,12 @@ import { playerReadyHandler, playerJoinHandler } from "./handlers";
 dotenv.config();
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, {cors: { origin: "*" }});
+const io = new Server(server, {cors: { origin: "http://localhost:8080" }});
 const PORT = process.env.PORT;
 
 
 // joining the party
-app.get("/join", cors(), playerJoinHandler);
+app.get("/join", cors({origin: "http://localhost:8080"}), playerJoinHandler);
 
 
 io.on("connection", (socket) => {

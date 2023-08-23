@@ -2,6 +2,7 @@ import { Socket } from "socket.io";
 import { Request, Response } from "express";
 import * as types from "./player";
 import { randomUUID } from "crypto";
+import * as events from "../src/events/SocketEvents";
 
 
 // constants
@@ -9,41 +10,42 @@ const MAX_PLAYER_COUNT = 2; // TODO: change this to 6
 const EMIT_TIMEOUT = 1000;
 
 // global variables
-let players = new Map<string, types.Player>();
-let sockets = new Map<string, Socket>();
-let hostId: string | undefined;
+let playerById = new Map<string, types.Player>();
+let socketById = new Map<string, Socket>();
+let players: types.Player[] = [];
 let gameStarted = false;
+
 
 ////////////////// REST handler //////////////////
 export function playerJoinHandler(request: Request, response: Response) {
-    console.log('join started');
-    const { name } = request.params;
-    if (players.size < MAX_PLAYER_COUNT) {
+    console.log('join started', request.query);
+    const { name } = request.query;
+    if (playerById.size < MAX_PLAYER_COUNT) {
         const playerId = randomUUID();
         const player: types.Player = {
-            name: name,
+            name: name as string,
             hand: [],
             id: playerId,
             ready: false,
+            order: players.length,
         };
-        players.set(playerId, player);
-        if (hostId == undefined) {
-            hostId = playerId;
-        }
-        response.status(200).json({ playerId: playerId, isHost: hostId == playerId });
+        playerById.set(playerId, player);
+        players.push(player);
+        response.status(200).json({ playerId: playerId, order: player.order });
     }
     else {
         response.status(503).json({ error: "Server at capacity!" });
     }
 }
 
+
 ////////////////// event handlers //////////////////
-export const playerReadyHandler: types.ClientEvents["ready"] = function(payload, callback) {
+export const playerReadyHandler: events.ClientEvents["ready"] = function(payload, callback) {
     // @ts-ignore
     const socket: Socket<ClientEvents> = this;
     console.log("ready event handler", payload);
     const { playerId } = payload;
-    const player = players.get(playerId);
+    const player = playerById.get(playerId);
     if (player != undefined) {
         if (player.ready) {
             console.log("player already read");
@@ -58,10 +60,10 @@ export const playerReadyHandler: types.ClientEvents["ready"] = function(payload,
             return;
         }
         player.ready = true;
-        sockets.set(playerId, socket);
-        console.log("player set ready", sockets.size);
+        socketById.set(playerId, socket);
+        console.log("player set ready", socketById.size);
 
-        if (sockets.size == MAX_PLAYER_COUNT) {
+        if (players.length === MAX_PLAYER_COUNT && players.every((player) => player.ready)) {
             console.log("ready to start game");
             startGame();
         }
@@ -77,13 +79,22 @@ export const playerReadyHandler: types.ClientEvents["ready"] = function(payload,
 
 
 ////////////////// event emitters //////////////////
-function emitGameStart(socket: Socket<types.ClientEvents, types.ServerEvents>, player: types.Player, retries = 3) {
-    console.log("start-game event ", player.hand, retries)
-    socket.timeout(EMIT_TIMEOUT).emit("start-game", player.hand, (err) => {
+function emitWithRetry(socket: Socket<events.ClientEvents, events.ServerEvents>, event: keyof events.ServerEvents, payload: any, retries = 3) {
+    socket.timeout(EMIT_TIMEOUT).emit(event, payload, (err) => {
         if (err && retries > 0) {
-            emitGameStart(socket, player, retries - 1);
+            emitWithRetry(socket, event, payload, retries - 1);
         }
     });
+}
+
+function emitGameStart(socket: Socket<events.ClientEvents, events.ServerEvents>, player: types.Player) {    
+    const payload: events.DealHandPayload = {
+        hand: player.hand,
+        playerNames: players.map<string>((player) => player.name),
+        playerOrder: player.order,
+    };
+    console.log("start-game event ", payload);
+    emitWithRetry(socket, "deal-hand", payload);
 }
 
 
@@ -99,8 +110,8 @@ function startGame() {
     console.log("shuffled deck", deck);
 
     // deal hand
-    for (const [id, player] of players) {
-        const socket = sockets.get(id);
+    for (const [id, player] of playerById) {
+        const socket = socketById.get(id);
         if (!socket) {
             console.error("no socket found for client id: ", id);
             continue;

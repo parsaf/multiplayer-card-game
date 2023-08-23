@@ -35,6 +35,7 @@
                 "y"
             ],
             "label": "opponent_2",
+            "scope": "CLASS",
             "x": 305,
             "y": 10
         },
@@ -46,6 +47,7 @@
                 "y"
             ],
             "label": "team_mate_1",
+            "scope": "CLASS",
             "x": 10,
             "y": 10
         },
@@ -57,6 +59,7 @@
                 "y"
             ],
             "label": "team_mate_2",
+            "scope": "CLASS",
             "x": 600,
             "y": 10
         },
@@ -68,6 +71,7 @@
                 "y"
             ],
             "label": "opponent_1",
+            "scope": "CLASS",
             "x": 10,
             "y": 592
         },
@@ -79,6 +83,7 @@
                 "y"
             ],
             "label": "opponent_3",
+            "scope": "CLASS",
             "x": 600,
             "y": 592
         },
@@ -93,6 +98,18 @@
             "scope": "CLASS",
             "x": 360,
             "y": 320
+        },
+        {
+            "prefabId": "0bd70489-f5a9-434d-a942-7e1ee460bc35",
+            "id": "8313a62b-dffa-475d-8f10-f50aa340b432",
+            "unlock": [
+                "x",
+                "y"
+            ],
+            "label": "nameInputModal",
+            "scope": "CLASS",
+            "x": 360,
+            "y": 640
         }
     ],
     "plainObjects": [],

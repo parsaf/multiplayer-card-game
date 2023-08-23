@@ -10,16 +10,19 @@ import Phaser from "phaser";
 import RedPlayer from "./RedPlayer";
 import BluePlayer from "./BluePlayer";
 import DropZonePrefab from "./DropZonePrefab";
+import EnterNamePrefab from "./EnterNamePrefab";
 /* START-USER-IMPORTS */
 import HandCard, { CARD_HEIGHT, CARD_WIDTH } from "./HandCard";
-import type { ServerEvents, ClientEvents } from "../events/ServerEvents";
+import type { ServerEvents, ClientEvents } from "../events/SocketEvents";
 import { GridSizer } from 'phaser3-rex-plugins/templates/ui/ui-components.js';
+import RexUIPlugin from 'phaser3-rex-plugins/templates/ui/ui-plugin.js';
+// import InputText from "phaser3-rex-plugins/plugins/inputtext.js";
 import { io, Socket } from "socket.io-client";
 import qs from "qs";
 import fetchBuilder from "fetch-retry";
 
 const fetchRetry = fetchBuilder(fetch);
-
+type OtherPlayer = RedPlayer | BluePlayer;
 /* END-USER-IMPORTS */
 
 export default class Level extends Phaser.Scene {
@@ -62,20 +65,38 @@ export default class Level extends Phaser.Scene {
 		const dropZone = new DropZonePrefab(this, 360, 320);
 		this.add.existing(dropZone);
 
+		// nameInputModal
+		const nameInputModal = new EnterNamePrefab(this, 360, 640);
+		this.add.existing(nameInputModal);
+
+		this.opponent_2 = opponent_2;
+		this.team_mate_1 = team_mate_1;
+		this.team_mate_2 = team_mate_2;
+		this.opponent_1 = opponent_1;
+		this.opponent_3 = opponent_3;
 		this.dropZone = dropZone;
+		this.nameInputModal = nameInputModal;
 
 		this.events.emit("scene-awake");
 	}
 
+	private opponent_2!: RedPlayer;
+	private team_mate_1!: BluePlayer;
+	private team_mate_2!: BluePlayer;
+	private opponent_1!: RedPlayer;
+	private opponent_3!: RedPlayer;
 	private dropZone!: DropZonePrefab;
+	private nameInputModal!: EnterNamePrefab;
 
 	/* START-USER-CODE */
+	rexUI!: RexUIPlugin;
 	private playerHand!: GridSizer;
 	private cardPile!: GridSizer;
 	private socket!: Socket<ServerEvents, ClientEvents>;
-	private cardVals!: number[];
-	private handDealt: boolean = false;
 	private playerId!: string;
+	private playerOrder!: number;
+	private playerName!: string;
+	private playersByOrder = new Map<number, OtherPlayer>();
 
 	create() {
 		this.editorCreate();
@@ -88,64 +109,14 @@ export default class Level extends Phaser.Scene {
             // transports: ["websocket"],
 		});
 
-		fetchRetry(SERVER_URL + "/join?" + qs.stringify({name: "Parsa"})).then((res) => {
-			console.log("made request");
-			if (!res.ok) {
-				throw new Error(`HTTP error! Status: ${res.status}`);
-			}
-			return res.json();
-		}).then((json) => {
-			console.log("json parsed", json["playerId"]);
-			this.playerId = json["playerId"];
-			// tell server player is ready
-			this.socket.emit("ready", { playerId: this.playerId }, (err) => {
-				console.log("ready emitted");
-				if (err) {
-					console.error(err);
-					throw Error(err.error);
-				}
-			});
-		});
-
 		// TODO get game state
 		// this.socket.on("connect", () => {
 		// });
 		this.input.on("dragstart", this.dragStartHandler, this);
 		this.input.on("drag", this.dragHandler, this);
 		this.input.on("dragend", this.dragEndHandler, this);
-
-		this.startGameHandler();
-
+		this.dealHandListener();
 	}
-
-	update(time: number, delta: number): void {
-		if (this.cardVals && !this.handDealt) {
-			console.log("createPlayerHand ready");
-			this.dealPlayerHand(this.cardVals);
-		}
-	}
-
-	// async emitWithRetryAsync<T>(event: keyof ClientEvents, arg: any, retry=3) {
-	// 	let hasErr = false;
-	// 	try {
-	// 		const response = await this.socket.timeout(TIMEOUT).emitWithAck(event, arg);
-	// 		hasErr = "error" in response;
-	// 	} catch (err) {
-	// 		hasErr = true;
-	// 	}
-	// 	if (hasErr && retry > 0) {
-
-	// 	}
-	// }
-
-	// emitWithRetry<T>(event: keyof ClientEvents, arg: any, retry=3) {
-	// 	this.socket.timeout(TIMEOUT).emit(event, arg, (err, res: ServerResponse<T>) => {
-	// 		if ((err || "error" in res) && retry > 0) {
-	// 			console.log("retries left ", retry, res, err);
-	// 			this.emitWithRetry(event, arg, retry - 1);
-	// 		}
-	// 	});
-	// }
 
 	dealPlayerHand(handVals: number[]) {
 		console.log("card vals", handVals);
@@ -177,21 +148,77 @@ export default class Level extends Phaser.Scene {
 			this.playerHand.add(card);
 		}
 		this.playerHand.layout();
-		this.handDealt = true;
 	}
 
-	////////// socket event handlers //////////
-	startGameHandler() {
-		console.log("start game handler");
-		this.socket.on("start-game", (hand, callback) => {
-			this.cardVals = hand;
-			console.log("got hand");
+	setPlayerNames(playerOrder: number, playerNames: string[]) {
+		console.log("setting player names", playerNames);
+		const playerObjects: OtherPlayer[] = [this.opponent_1, this.team_mate_1, this.opponent_2, this.team_mate_2, this.opponent_3];
+
+		this.playerOrder = playerOrder;
+
+		for (let i = 0; i < playerNames.length - 1; i++) {
+			const order = (playerOrder + i + 1) % playerNames.length
+			const name = playerNames[order];
+			const player = playerObjects[i];
+			player.addPlayerName(name);
+			this.playersByOrder.set(order, player);
+		}
+		// playerNames = ["Parsa", "Arshia", 
+		// 	// "Behnood", "Pirooz", "Baba", "Maman"
+		// ];
+		// playerOrder = 0;
+		// for (let i = 0; i < playerNames.length - 1; i++) {
+		// 	const order = (playerOrder + i + 1) % playerNames.length
+		// 	const name = playerNames[order];
+		// 	const player = playerObjects[i];
+		// 	player.addPlayerName(name);
+		// 	this.playersByOrder.set(order, player);
+		// }
+	}
+
+	////////// socket event listener //////////
+
+	dealHandListener() {
+		console.log("deal hand listener");
+		this.socket.on("deal-hand", (payload, callback) => {
 			callback();
+			console.log("got hand");
+			this.dealPlayerHand(payload.hand);
+			this.setPlayerNames(payload.playerOrder, payload.playerNames);
+		});
+	}
+
+	////////// Text edit event handler
+	onPlayerNameSubmit(textObject: Phaser.GameObjects.Text) {
+		if (this.playerName) {
+			return;
+		}
+		this.playerName = textObject.text;
+		console.log("name entered", this.playerName);
+		
+		this.nameInputModal.destroy();
+
+		fetchRetry(SERVER_URL + "/join?" + qs.stringify({name: this.playerName})).then((res) => {
+			console.log("made request");
+			if (!res.ok) {
+				throw new Error(`HTTP error! Status: ${res.status}`);
+			}
+			return res.json();
+		}).then((json) => {
+			console.log("json parsed", json["playerId"]);
+			this.playerId = json["playerId"];
+			// tell server player is ready
+			this.socket.emit("ready", { playerId: this.playerId }, (err) => {
+				console.log("ready emitted");
+				if (err) {
+					console.error(err);
+					throw Error(err.error);
+				}
+			});
 		});
 	}
 
 	////////// card drag event handlers //////////
-
 	dragStartHandler(pointer: Phaser.Input.Pointer, obj: Phaser.GameObjects.Image) {
 		console.log("drag start");
 		obj.setOrigin(0.5, 1);
