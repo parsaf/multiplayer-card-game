@@ -23,7 +23,7 @@ export default class EnterNamePrefab extends Phaser.GameObjects.Container {
 		const text = scene.add.text(0, 0, "", {});
 		text.setOrigin(0.5, 0.5);
 		text.text = "Enter Your Name";
-		text.setStyle({ "backgroundColor": "#00ccffff", "fontSize": "32px" });
+		text.setStyle({ "backgroundColor": "", "fontSize": "32px" });
 		this.add(text);
 
 		/* START-USER-CTR-CODE */

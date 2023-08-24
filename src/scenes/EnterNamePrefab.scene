@@ -35,7 +35,7 @@
                     "originY": 0.5,
                     "text": "Enter Your Name",
                     "fontSize": "32px",
-                    "backgroundColor": "#00ccffff"
+                    "backgroundColor": ""
                 }
             ]
         }
