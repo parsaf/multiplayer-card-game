@@ -2,6 +2,7 @@ import Phaser from "phaser";
 import Level from "./scenes/Level";
 import preloadAssetPackUrl from "../static/assets/preload-asset-pack.json";
 import Preload from "./scenes/Preload";
+import Lobby from "./scenes/Lobby";
 import RexUIPlugin from 'phaser3-rex-plugins/templates/ui/ui-plugin.js';
 
 class Boot extends Phaser.Scene {
@@ -32,7 +33,7 @@ window.addEventListener('load', function () {
 			mode: Phaser.Scale.ScaleModes.FIT,
 			autoCenter: Phaser.Scale.Center.CENTER_BOTH,
 		},
-		scene: [Boot, Preload, Level],
+		scene: [Boot, Preload, Lobby, Level],
 		parent: 'phaser-example',
 		dom: {
 			createContainer: true

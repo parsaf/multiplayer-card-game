@@ -1,0 +1,171 @@
+{
+    "id": "7aba5fa6-fe0a-47b7-b625-64a2aa85f7a9",
+    "sceneType": "SCENE",
+    "settings": {
+        "exportClass": true,
+        "autoImport": true,
+        "preloadPackFiles": [],
+        "createMethodName": "editorCreate",
+        "sceneKey": "Lobby",
+        "compilerOutputLanguage": "TYPE_SCRIPT",
+        "borderWidth": 720,
+        "borderHeight": 1280
+    },
+    "displayList": [
+        {
+            "type": "Image",
+            "id": "e1c676aa-a53e-4d0b-90b5-7f377240b128",
+            "label": "carpet",
+            "texture": {
+                "key": "carpet"
+            },
+            "x": 360,
+            "y": 640,
+            "scaleX": 0.87,
+            "scaleY": 1.15
+        },
+        {
+            "type": "Text",
+            "id": "f5b65420-de98-40c2-ac62-9ff0bb259c48",
+            "label": "team_1",
+            "x": 360,
+            "y": 426,
+            "originX": 0.5,
+            "originY": 0.5,
+            "visible": false,
+            "text": "Team 1",
+            "fontSize": "40px",
+            "backgroundColor": "#ff0035ff"
+        },
+        {
+            "type": "Text",
+            "id": "82bbe3f9-3bfc-4c23-a5dd-4c581accce40",
+            "label": "team_2",
+            "x": 360,
+            "y": 852,
+            "originX": 0.5,
+            "originY": 0.5,
+            "visible": false,
+            "text": "Team 2",
+            "fontSize": "40px",
+            "backgroundColor": "#ff0035ff"
+        },
+        {
+            "type": "Text",
+            "id": "ffe56964-eab6-4f11-8b5b-7d886962dd48",
+            "label": "player1_1",
+            "scope": "CLASS",
+            "x": 360,
+            "y": 466,
+            "originX": 0.5,
+            "originY": 0.5,
+            "visible": false,
+            "text": "player 1",
+            "fontSize": "28px",
+            "backgroundColor": ""
+        },
+        {
+            "type": "Text",
+            "id": "f7075d44-5148-449b-8cac-f6049a3f967f",
+            "label": "player1_2",
+            "scope": "CLASS",
+            "x": 360,
+            "y": 507,
+            "originX": 0.5,
+            "originY": 0.5,
+            "visible": false,
+            "text": "player 2",
+            "fontSize": "28px",
+            "backgroundColor": ""
+        },
+        {
+            "type": "Text",
+            "id": "c1f41cdd-603f-4886-8517-8fa40ae86513",
+            "label": "player1_3",
+            "scope": "CLASS",
+            "x": 361.8813171042931,
+            "y": 548.1107520663506,
+            "originX": 0.5,
+            "originY": 0.5,
+            "visible": false,
+            "text": "player 3",
+            "fontSize": "28px",
+            "backgroundColor": ""
+        },
+        {
+            "type": "Text",
+            "id": "cccc7c92-608f-4bd3-8a2f-48d9c2de4746",
+            "label": "player2_1",
+            "scope": "CLASS",
+            "x": 360,
+            "y": 892,
+            "originX": 0.5,
+            "originY": 0.5,
+            "visible": false,
+            "text": "player 1",
+            "fontSize": "28px",
+            "backgroundColor": ""
+        },
+        {
+            "type": "Text",
+            "id": "c511d141-efcb-4d9c-b9ff-74f8a7319b4b",
+            "label": "player2_2",
+            "scope": "CLASS",
+            "x": 360,
+            "y": 932,
+            "originX": 0.5,
+            "originY": 0.5,
+            "visible": false,
+            "text": "player 2",
+            "fontSize": "28px",
+            "backgroundColor": ""
+        },
+        {
+            "type": "Text",
+            "id": "6e910624-ea09-4de5-ad65-e7207c47fa9d",
+            "label": "player2_4",
+            "scope": "CLASS",
+            "x": 360,
+            "y": 972,
+            "originX": 0.5,
+            "originY": 0.5,
+            "visible": false,
+            "text": "player 3",
+            "fontSize": "28px",
+            "backgroundColor": ""
+        },
+        {
+            "type": "Image",
+            "id": "756140fa-a2da-4b3a-9343-110681bfb63c",
+            "label": "team_switch",
+            "scope": "CLASS",
+            "texture": {
+                "key": "up-down"
+            },
+            "x": 360,
+            "y": 680,
+            "scaleX": 0.27,
+            "scaleY": 0.26,
+            "visible": false
+        },
+        {
+            "prefabId": "0bd70489-f5a9-434d-a942-7e1ee460bc35",
+            "id": "20b59d53-c445-4a46-92da-77da170bd927",
+            "unlock": [
+                "x",
+                "y"
+            ],
+            "label": "enterNamePrefab",
+            "scope": "CLASS",
+            "x": 360,
+            "y": 639
+        }
+    ],
+    "plainObjects": [],
+    "meta": {
+        "app": "Phaser Editor 2D - Scene Editor",
+        "url": "https://phasereditor2d.com",
+        "contentType": "phasereditor2d.core.scene.SceneContentType",
+        "version": 4
+    }
+}

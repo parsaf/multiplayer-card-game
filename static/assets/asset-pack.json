@@ -16,6 +16,11 @@
                 "url": "assets/sprite.json",
                 "path": "assets",
                 "key": "sprite"
+            },
+            {
+                "url": "assets/up-down.png",
+                "type": "image",
+                "key": "up-down"
             }
         ]
     },
