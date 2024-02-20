@@ -1,7 +1,7 @@
 
 // You can write more code here
 
-const SERVER_URL = "http://localhost:8000";
+const SERVER_URL = "/api";
 const TIMEOUT = 1000;
 
 /* START OF COMPILED CODE */
@@ -13,10 +13,8 @@ import DropZonePrefab from "./DropZonePrefab";
 import EnterNamePrefab from "./EnterNamePrefab";
 /* START-USER-IMPORTS */
 import HandCard, { CARD_HEIGHT, CARD_WIDTH } from "./HandCard";
-import type { ServerEvents, ClientEvents } from "../events/SocketEvents";
-import { GridSizer } from 'phaser3-rex-plugins/templates/ui/ui-components.js';
+import type * as Events from "../events/SocketEvents";
 import RexUIPlugin from 'phaser3-rex-plugins/templates/ui/ui-plugin.js';
-// import InputText from "phaser3-rex-plugins/plugins/inputtext.js";
 import { io, Socket } from "socket.io-client";
 import qs from "qs";
 import fetchBuilder from "fetch-retry";
@@ -65,6 +63,24 @@ export default class Level extends Phaser.Scene {
 		const dropZone = new DropZonePrefab(this, 360, 320);
 		this.add.existing(dropZone);
 
+		// theirScore
+		const theirScore = this.add.text(710, 853, "", {});
+		theirScore.setOrigin(0.999526529059053, 0.000654663140794722);
+		theirScore.text = "Them: 0";
+		theirScore.setStyle({ "backgroundColor": "#ff0000ff", "fontSize": "22px", "stroke": "#000000ff", "strokeThickness":4});
+
+		// ourScore
+		const ourScore = this.add.text(10, 853, "", {});
+		ourScore.text = "Us: 0";
+		ourScore.setStyle({ "backgroundColor": "#00ccffff", "fontSize": "22px", "stroke": "#000000ff", "strokeThickness":4});
+
+		// turnStatus
+		const turnStatus = this.add.rectangle(360, 1214, 714, 128);
+		turnStatus.visible = false;
+		turnStatus.isStroked = true;
+		turnStatus.strokeColor = 589614;
+		turnStatus.lineWidth = 6;
+
 		// nameInputModal
 		const nameInputModal = new EnterNamePrefab(this, 360, 640);
 		this.add.existing(nameInputModal);
@@ -75,6 +91,9 @@ export default class Level extends Phaser.Scene {
 		this.opponent_1 = opponent_1;
 		this.opponent_3 = opponent_3;
 		this.dropZone = dropZone;
+		this.theirScore = theirScore;
+		this.ourScore = ourScore;
+		this.myTurnStatus = turnStatus;
 		this.nameInputModal = nameInputModal;
 
 		this.events.emit("scene-awake");
@@ -86,27 +105,36 @@ export default class Level extends Phaser.Scene {
 	private opponent_1!: RedPlayer;
 	private opponent_3!: RedPlayer;
 	private dropZone!: DropZonePrefab;
+	private theirScore!: Phaser.GameObjects.Text;
+	private ourScore!: Phaser.GameObjects.Text;
+	private myTurnStatus!: Phaser.GameObjects.Rectangle;
 	private nameInputModal!: EnterNamePrefab;
 
 	/* START-USER-CODE */
 	rexUI!: RexUIPlugin;
-	private playerHand!: GridSizer;
-	private cardPile!: GridSizer;
-	private socket!: Socket<ServerEvents, ClientEvents>;
+	private playerHand!: RexUIPlugin.GridSizer;
+	private socket!: Socket<Events.ServerEvents, Events.ClientEvents>;
 	private playerId!: string;
-	private playerOrder!: number;
+	private myOrder!: number;
 	private playerName!: string;
+	private myTeam!: Events.Team;
 	private playersByOrder = new Map<number, OtherPlayer>();
+
+	// game state
+	private cardPile!: RexUIPlugin.GridSizer;
+	private team1Score: number = 0;
+	private team2Score: number = 0;
+	private round: number = 1;
+	private completedTurns: number = 0;
+	private nextPlayer: number = 1;
 
 	create() {
 		this.editorCreate();
 		console.log("create");
 
-		this.socket = io(SERVER_URL, {
+		this.socket = io('/', {
 			retries: 10,
-			// forceNew: true,
 			timeout: TIMEOUT * 5,
-            // transports: ["websocket"],
 		});
 
 		// TODO get game state
@@ -116,12 +144,13 @@ export default class Level extends Phaser.Scene {
 		this.input.on("drag", this.dragHandler, this);
 		this.input.on("dragend", this.dragEndHandler, this);
 		this.dealHandListener();
+		this.newTurnListener();
 	}
 
 	dealPlayerHand(handVals: number[]) {
 		console.log("card vals", handVals);
 		handVals.sort((a, b) => b - a);
-		this.cardPile = new GridSizer(this, {
+		this.cardPile = this.rexUI.add.gridSizer({
 			x: Math.floor(this.dropZone.x),
 			y: Math.floor(this.dropZone.y),
 			column: 3,
@@ -131,8 +160,7 @@ export default class Level extends Phaser.Scene {
 				row: 5,
 			},
 		})
-		this.add.existing(this.cardPile);
-		this.playerHand = new GridSizer(this, {
+		this.playerHand = this.rexUI.add.gridSizer({
 			x: Math.floor(this.game.config.width as number / 2),
 			y: this.game.config.height as number - 5 - Math.floor(CARD_HEIGHT / 2),
 			column: 9,
@@ -143,59 +171,167 @@ export default class Level extends Phaser.Scene {
 		for (const val of handVals) {
 			let card = new HandCard(this);
 			card.assignValue(val);
-			card.setInteractive({draggable: true});
             this.add.existing(card);
 			this.playerHand.add(card);
 		}
 		this.playerHand.layout();
 	}
 
-	setPlayerNames(playerOrder: number, playerNames: string[]) {
-		console.log("setting player names", playerNames);
+	setPlayerNames(playerOrder: number, playerDetails: Events.PlayerDetails[]) {
+		console.log("setting player names", playerDetails);
 		const playerObjects: OtherPlayer[] = [this.opponent_1, this.team_mate_1, this.opponent_2, this.team_mate_2, this.opponent_3];
 
-		this.playerOrder = playerOrder;
+		this.myOrder = playerOrder;
+		playerDetails.sort((detail) => detail.order);
 
-		for (let i = 0; i < playerNames.length - 1; i++) {
-			const order = (playerOrder + i + 1) % playerNames.length
-			const name = playerNames[order];
+		for (let i = 0; i < playerDetails.length - 1; i++) {
+			const idx = (playerOrder + i) % playerDetails.length;
+			const detail = playerDetails[idx];
 			const player = playerObjects[i];
-			player.addPlayerName(name);
-			this.playersByOrder.set(order, player);
+			player.addPlayerName(detail.name);
+			this.playersByOrder.set(detail.order, player);
 		}
-		// playerNames = ["Parsa", "Arshia", 
-		// 	// "Behnood", "Pirooz", "Baba", "Maman"
-		// ];
-		// playerOrder = 0;
-		// for (let i = 0; i < playerNames.length - 1; i++) {
-		// 	const order = (playerOrder + i + 1) % playerNames.length
-		// 	const name = playerNames[order];
-		// 	const player = playerObjects[i];
-		// 	player.addPlayerName(name);
-		// 	this.playersByOrder.set(order, player);
-		// }
+		this.myTeam = playerDetails[playerOrder - 1].team;
+	}
+
+	performLastTurn(payload: Events.NewTurnPayload) {
+		// this event only fires when a turn has been completed so cardsPlayed should never be empty
+		console.log("performing last turn", payload.lastTurn);
+		const currentPileSize = this.getCurrentCardPileSize();
+		if (currentPileSize === payload.cardsPlayed.length) {
+			console.log("last turn cards match existing cards");
+			return;
+		}
+
+		if (currentPileSize > payload.cardsPlayed.length) {
+			throw Error("more cards in current pile than got from server");
+		}
+
+		// clean out any player turn status
+		this.playersByOrder.forEach((player) => player.setTurnStatus(false));
+		this.myTurnStatus.setVisible(false);
+
+		const lastPlayerOrder = payload.lastPlayer;
+		if (!lastPlayerOrder) {
+			console.log("no last player");
+			return;
+		}
+		if (lastPlayerOrder === this.myOrder) {
+			throw Error("I was the last player but my card pile didn't match");
+
+		}
+		const lastPlayer = this.playersByOrder.get(lastPlayerOrder);
+		if (!lastPlayer) {
+			throw Error("Coudln't find last player with player order " + lastPlayerOrder.toString());
+		}
+		lastPlayer.setTurnStatus(true);
+		
+		console.log("updating the card pile", payload.cardsPlayed, lastPlayer.x, lastPlayer.y);
+		
+		// check if current card pile match the previous cards played
+		const doCardsMatch = true;
+		const pileItems = this.cardPile.getElement('items') as HandCard[];
+		for (let i = 0; i < payload.cardsPlayed.length - 1 ; i++) {
+			const cardVal = payload.cardsPlayed[i];
+			if (!pileItems[i] || pileItems[i].value !== cardVal) {
+				console.log("card pile doesn't match", cardVal);
+				break;
+			}
+		}
+
+		// only update whole card pile if it doesn't match
+		if (!doCardsMatch) {
+			this.cardPile.clear(true);
+			for (let i = 0; i < payload.cardsPlayed.length - 1; i++) {
+				const cardVal = payload.cardsPlayed[i];
+				console.log("adding card", cardVal);
+				const cardObj = new HandCard(this, -100, -100);
+				this.add.existing(cardObj);
+				cardObj.assignValue(cardVal);
+				this.cardPile.add(cardObj, {
+					align: 'center',
+					expand: false,
+				});
+			}
+		}
+
+		// add the last one with animation
+		const cardVal = payload.cardsPlayed[payload.cardsPlayed.length - 1];
+		console.log("adding last card", cardVal);
+		const cardObj = new HandCard(this, lastPlayer.x, lastPlayer.y);
+		this.add.existing(cardObj);
+		cardObj.assignValue(cardVal);
+		this.add.tween({
+			targets: cardObj,
+			x: this.cardPile.x,
+			y: this.cardPile.y,
+			duration: 150,
+			onComplete: (tween, targets, param) => {
+				this.cardPile.add(cardObj, {
+					align: 'center',
+					expand: false,
+				});
+				this.cardPile.layout();
+				lastPlayer.setTurnStatus(false);
+			},
+		});
+		this.completedTurns = payload.lastTurn;
 	}
 
 	////////// socket event listener //////////
-
 	dealHandListener() {
 		console.log("deal hand listener");
 		this.socket.on("deal-hand", (payload, callback) => {
 			callback();
 			console.log("got hand");
 			this.dealPlayerHand(payload.hand);
-			this.setPlayerNames(payload.playerOrder, payload.playerNames);
+			this.setPlayerNames(payload.playerOrder, payload.playerDetails);
 		});
 	}
 
-	////////// Text edit event handler
+	newTurnListener() {
+		console.log("new turn listener");
+		this.socket.on("new-turn", (payload) => {
+			let isGameStartEvent = payload.round === 1 && payload.lastTurn === 0;
+			console.log("got new turn", payload, "game start?", isGameStartEvent, this.round, this.completedTurns);
+			if (this.round > payload.round || 
+				(this.round === payload.round && payload.lastTurn <= this.completedTurns) && !isGameStartEvent) {
+					// ignore old event
+					console.log("ignoring old event", payload, "round: ", this.round, "turn: ", this.completedTurns);
+					return;
+			}
+			if (this.round < payload.round) {
+				this.completeRound(payload);
+			}
+			this.performLastTurn(payload);
+
+			// set turn status for current turn
+			if (!payload.nextPlayer) {
+				return;
+			}
+			if (payload.nextPlayer === this.myOrder) {
+				console.log("my turn");
+				this.myTurnStatus.setVisible(true);
+				this.setHandCardsInteractive(true);
+			} else {
+				console.log("turn: player order", payload.nextPlayer);
+				const nextPlayer = this.playersByOrder.get(payload.nextPlayer);
+				if (nextPlayer) {
+					nextPlayer.setTurnStatus(true);
+				}
+			}
+		});
+
+	}
+
+	////////// Text edit event handler //////////
 	onPlayerNameSubmit(textObject: Phaser.GameObjects.Text) {
 		if (this.playerName) {
 			return;
 		}
 		this.playerName = textObject.text;
 		console.log("name entered", this.playerName);
-		
+
 		this.nameInputModal.destroy();
 
 		fetchRetry(SERVER_URL + "/join?" + qs.stringify({name: this.playerName})).then((res) => {
@@ -257,8 +393,75 @@ export default class Level extends Phaser.Scene {
 		}
 		this.playerHand.layout();
 		this.dropZone.setVisible(false);
+		if (dropped) {
+			this.setHandCardsInteractive(false);
+			this.myTurnStatus.setVisible(false);
+			this.completeMyTurn((obj as HandCard).value );
+
+		}
 	}
 
+	setHandCardsInteractive(on: boolean) {
+		const hand = this.playerHand.getElement('items') as HandCard[]
+		hand.forEach((card) => {
+			// skip if null
+			if (!card) {
+				return;
+			}
+			if (on) {
+				card.setInteractive({draggable: true});
+			} else {
+				card.disableInteractive();
+			}
+		});
+	}
+
+	// score updater
+	updateScore(team1Score: number, team2Score: number) {
+		console.log("update score", team1Score, team2Score);
+		if (team1Score === this.team1Score && team2Score === this.team2Score) {
+			return;
+		}
+		this.team1Score = team1Score;
+		this.team2Score = team2Score;
+		if (this.myTeam === "TEAM_1") {
+			this.ourScore.setText(`Us: ${team1Score}`);
+			this.theirScore.setText(`Them: ${team2Score}`);
+		} else {
+			this.ourScore.setText(`Us: ${team2Score}`);
+			this.theirScore.setText(`Them: ${team1Score}`);
+		}
+	}
+
+	getCurrentCardPileSize(): number {
+		// iterate through the card pile elements and return count of non-null elements
+		const pile = this.cardPile.getElement('items') as HandCard[];
+		console.log("pile", pile);
+		return pile.filter((card) => card !== null).length;
+	}
+
+	completeMyTurn(cardValue: number) {
+		this.socket.emit("turn-complete", {
+			playerId: this.playerId,
+			card: cardValue,
+			turn: this.myOrder,
+		}, (err) => {
+			console.log("turn-complete emitted");
+			if (err) {
+				console.error(err);
+			}
+		});
+	}
+
+	completeRound(payload: Events.NewTurnPayload) {
+		console.log("round complete", payload);
+		this.round = payload.round;
+		this.completedTurns = payload.lastTurn;
+		this.cardPile.clear(true);
+		this.playersByOrder.forEach((player) => player.setTurnStatus(false));
+		this.myTurnStatus.setVisible(false);
+		this.updateScore(payload.team1Score, payload.team2Score);
+	}
 	/* END-USER-CODE */
 }
 

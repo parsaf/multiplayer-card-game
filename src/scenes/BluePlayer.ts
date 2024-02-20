@@ -30,7 +30,16 @@ export default class BluePlayer extends Phaser.GameObjects.Container {
 		text_1.setStyle({ "backgroundColor": "#00ccffff", "fontSize": "22px", "stroke": "#000000ff", "strokeThickness":4});
 		this.add(text_1);
 
+		// turnStatus
+		const turnStatus = scene.add.rectangle(60, 63, 128, 128);
+		turnStatus.visible = false;
+		turnStatus.isStroked = true;
+		turnStatus.strokeColor = 589614;
+		turnStatus.lineWidth = 6;
+		this.add(turnStatus);
+
 		this.text_1 = text_1;
+		this.turnStatus = turnStatus;
 
 		/* START-USER-CTR-CODE */
 		// Write your code here.
@@ -38,10 +47,15 @@ export default class BluePlayer extends Phaser.GameObjects.Container {
 	}
 
 	private text_1: Phaser.GameObjects.Text;
+	private turnStatus: Phaser.GameObjects.Rectangle;
 
 	/* START-USER-CODE */
 	addPlayerName(name: string) {
 		this.text_1.setText(name);
+	}
+	
+	setTurnStatus(status: boolean) {
+		this.turnStatus.setVisible(status);
 	}
 
 	/* END-USER-CODE */

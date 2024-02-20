@@ -61,6 +61,20 @@
                     "stroke": "#000000ff",
                     "strokeThickness": 4,
                     "backgroundColor": "#ff0000ff"
+                },
+                {
+                    "type": "Rectangle",
+                    "id": "81a7cdb8-b2ce-4d8c-8a6f-70739cf75753",
+                    "label": "turnStatus",
+                    "scope": "CLASS",
+                    "x": 63,
+                    "y": 63,
+                    "visible": false,
+                    "strokeColor": "#08ff2e",
+                    "lineWidth": 6,
+                    "isStroked": true,
+                    "width": 128,
+                    "height": 128
                 }
             ]
         }

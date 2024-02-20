@@ -50,6 +50,17 @@ module.exports = {
         open: true,
         hot: true,
         port: 8080,
+        proxy: {
+            '/api': {
+                target: 'http://localhost:8000',
+                secure: false,
+                pathRewrite: { '^/api': '' },
+            },
+            '/socket.io': {
+                target: 'http://localhost:8000',
+                ws: true,
+            },
+        },
     },
     plugins: [
         new HtmlWebpackPlugin({

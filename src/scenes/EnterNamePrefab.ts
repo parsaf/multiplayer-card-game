@@ -28,9 +28,18 @@ export default class EnterNamePrefab extends Phaser.GameObjects.Container {
 
 		/* START-USER-CTR-CODE */
 		text.setInteractive().on('pointerdown', () => {
-			// text.setText("");
 			// @ts-ignore
-			scene.rexUI.edit(text, { selectAll: true }, scene.onPlayerNameSubmit.bind(scene));
+			scene.rexUI.edit(
+				text,
+				{
+					align: 'center',
+					border: 2,
+					borderColor: '#ffffff',
+					selectAll: true,
+					backgroundColor: 'transparent',
+				},
+				// @ts-ignore
+				scene.onPlayerNameSubmit.bind(scene));
 		})
 		/* END-USER-CTR-CODE */
 	}

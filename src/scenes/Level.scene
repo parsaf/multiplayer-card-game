@@ -100,6 +100,48 @@
             "y": 320
         },
         {
+            "type": "Text",
+            "id": "2e7abc5c-b0b2-4f72-a46c-e3267c4dc705",
+            "label": "theirScore",
+            "scope": "CLASS",
+            "x": 710,
+            "y": 853,
+            "originX": 0.999526529059053,
+            "originY": 0.000654663140794722,
+            "text": "Them: 0",
+            "fontSize": "22px",
+            "stroke": "#000000ff",
+            "strokeThickness": 4,
+            "backgroundColor": "#ff0000ff"
+        },
+        {
+            "type": "Text",
+            "id": "f4cb20e3-6caa-41e5-8131-f404b11e8fd6",
+            "label": "ourScore",
+            "scope": "CLASS",
+            "x": 10,
+            "y": 853,
+            "text": "Us: 0",
+            "fontSize": "22px",
+            "stroke": "#000000ff",
+            "strokeThickness": 4,
+            "backgroundColor": "#00ccffff"
+        },
+        {
+            "type": "Rectangle",
+            "id": "e6568c8b-723f-4fbd-b302-02899472eaf7",
+            "label": "turnStatus",
+            "scope": "CLASS",
+            "x": 360,
+            "y": 1214,
+            "visible": false,
+            "strokeColor": "#08ff2e",
+            "lineWidth": 6,
+            "isStroked": true,
+            "width": 714,
+            "height": 128
+        },
+        {
             "prefabId": "0bd70489-f5a9-434d-a942-7e1ee460bc35",
             "id": "8313a62b-dffa-475d-8f10-f50aa340b432",
             "unlock": [
