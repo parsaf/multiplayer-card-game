@@ -29,10 +29,9 @@
             "id": "f5b65420-de98-40c2-ac62-9ff0bb259c48",
             "label": "team_1",
             "x": 360,
-            "y": 426,
+            "y": 221,
             "originX": 0.5,
             "originY": 0.5,
-            "visible": false,
             "text": "Team 1",
             "fontSize": "40px",
             "backgroundColor": "#ff0035ff"
@@ -42,10 +41,9 @@
             "id": "82bbe3f9-3bfc-4c23-a5dd-4c581accce40",
             "label": "team_2",
             "x": 360,
-            "y": 852,
+            "y": 780,
             "originX": 0.5,
             "originY": 0.5,
-            "visible": false,
             "text": "Team 2",
             "fontSize": "40px",
             "backgroundColor": "#ff0035ff"
@@ -56,13 +54,13 @@
             "label": "player1_1",
             "scope": "CLASS",
             "x": 360,
-            "y": 466,
+            "y": 261,
             "originX": 0.5,
             "originY": 0.5,
             "visible": false,
             "text": "player 1",
             "fontSize": "28px",
-            "backgroundColor": ""
+            "backgroundColor": "#00ccffff"
         },
         {
             "type": "Text",
@@ -70,27 +68,27 @@
             "label": "player1_2",
             "scope": "CLASS",
             "x": 360,
-            "y": 507,
+            "y": 302,
             "originX": 0.5,
             "originY": 0.5,
             "visible": false,
             "text": "player 2",
             "fontSize": "28px",
-            "backgroundColor": ""
+            "backgroundColor": "#00ccffff"
         },
         {
             "type": "Text",
             "id": "c1f41cdd-603f-4886-8517-8fa40ae86513",
             "label": "player1_3",
             "scope": "CLASS",
-            "x": 361.8813171042931,
-            "y": 548.1107520663506,
+            "x": 360,
+            "y": 341,
             "originX": 0.5,
             "originY": 0.5,
             "visible": false,
             "text": "player 3",
             "fontSize": "28px",
-            "backgroundColor": ""
+            "backgroundColor": "#00ccffff"
         },
         {
             "type": "Text",
@@ -98,13 +96,13 @@
             "label": "player2_1",
             "scope": "CLASS",
             "x": 360,
-            "y": 892,
+            "y": 822,
             "originX": 0.5,
             "originY": 0.5,
             "visible": false,
             "text": "player 1",
             "fontSize": "28px",
-            "backgroundColor": ""
+            "backgroundColor": "#00ccffff"
         },
         {
             "type": "Text",
@@ -112,27 +110,27 @@
             "label": "player2_2",
             "scope": "CLASS",
             "x": 360,
-            "y": 932,
+            "y": 860,
             "originX": 0.5,
             "originY": 0.5,
             "visible": false,
             "text": "player 2",
             "fontSize": "28px",
-            "backgroundColor": ""
+            "backgroundColor": "#00ccffff"
         },
         {
             "type": "Text",
             "id": "6e910624-ea09-4de5-ad65-e7207c47fa9d",
-            "label": "player2_4",
+            "label": "player2_3",
             "scope": "CLASS",
             "x": 360,
-            "y": 972,
+            "y": 898,
             "originX": 0.5,
             "originY": 0.5,
             "visible": false,
             "text": "player 3",
             "fontSize": "28px",
-            "backgroundColor": ""
+            "backgroundColor": "#00ccffff"
         },
         {
             "type": "Image",
@@ -142,11 +140,107 @@
             "texture": {
                 "key": "up-down"
             },
-            "x": 360,
-            "y": 680,
+            "x": 282,
+            "y": 610,
             "scaleX": 0.27,
             "scaleY": 0.26,
             "visible": false
+        },
+        {
+            "type": "Text",
+            "id": "76544596-9189-4ee5-ae77-b2e3c03fab89",
+            "label": "player1_4",
+            "scope": "CLASS",
+            "x": 359,
+            "y": 381,
+            "originX": 0.5,
+            "originY": 0.5,
+            "visible": false,
+            "text": "player 4",
+            "fontSize": "28px",
+            "backgroundColor": "#00ccffff"
+        },
+        {
+            "type": "Text",
+            "id": "adb000f8-8f33-436c-ac13-978b2a4a4534",
+            "label": "player1_5",
+            "scope": "CLASS",
+            "x": 359,
+            "y": 420,
+            "originX": 0.5,
+            "originY": 0.5,
+            "visible": false,
+            "text": "player 5",
+            "fontSize": "28px",
+            "backgroundColor": "#00ccffff"
+        },
+        {
+            "type": "Text",
+            "id": "ea121604-6ff7-42af-8f38-74e7e077612f",
+            "label": "player1_6",
+            "scope": "CLASS",
+            "x": 359,
+            "y": 460,
+            "originX": 0.5,
+            "originY": 0.5,
+            "visible": false,
+            "text": "player 6",
+            "fontSize": "28px",
+            "backgroundColor": "#00ccffff"
+        },
+        {
+            "type": "Text",
+            "id": "5bfef44f-ff9a-4c2b-834e-65c333a096aa",
+            "label": "player2_4",
+            "scope": "CLASS",
+            "x": 360,
+            "y": 940,
+            "originX": 0.5,
+            "originY": 0.5,
+            "visible": false,
+            "text": "player 4",
+            "fontSize": "28px",
+            "backgroundColor": "#00ccffff"
+        },
+        {
+            "type": "Text",
+            "id": "d2e85ed1-f565-45ae-ba88-c755b01b9c0c",
+            "label": "player2_5",
+            "scope": "CLASS",
+            "x": 360,
+            "y": 979,
+            "originX": 0.5,
+            "originY": 0.5,
+            "visible": false,
+            "text": "player 5",
+            "fontSize": "28px",
+            "backgroundColor": "#00ccffff"
+        },
+        {
+            "type": "Text",
+            "id": "e292d215-394c-4290-861d-a75863775785",
+            "label": "player2_6",
+            "scope": "CLASS",
+            "x": 361,
+            "y": 1019,
+            "originX": 0.5,
+            "originY": 0.5,
+            "visible": false,
+            "text": "player 6",
+            "fontSize": "28px",
+            "backgroundColor": "#00ccffff"
+        },
+        {
+            "prefabId": "3162309b-c799-4861-bdc9-f4ede3eb371b",
+            "id": "83ffd184-cbb3-43e7-a6ef-9c18270ef3eb",
+            "unlock": [
+                "x",
+                "y"
+            ],
+            "label": "playerReadyState",
+            "scope": "CLASS",
+            "x": 452,
+            "y": 610
         },
         {
             "prefabId": "0bd70489-f5a9-434d-a942-7e1ee460bc35",
@@ -157,7 +251,7 @@
             ],
             "label": "enterNamePrefab",
             "scope": "CLASS",
-            "x": 360,
+            "x": 362,
             "y": 639
         }
     ],

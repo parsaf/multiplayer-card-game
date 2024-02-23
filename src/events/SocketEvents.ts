@@ -1,11 +1,14 @@
 export interface ClientEvents {
-	"ready": (payload: playerReadyPayload, callback: (res?: SocketError) => void) => void;
+	"ready-state": (payload: PlayerReadyPayload, callback: (ready?: PlayerReadyState) => void) => void;
 	"turn-complete": (payload: TurnCompletePayload, callback: (res?: SocketError) => void) => void;
+	"switch-team": (payload: TeamSwitchPayload, callback: (res?: SocketError) => void) => void;
+	"deal-hand": (payload: DealHandPayload, callback: (res?: DealHandResponse) => void) => void;
 }
 
 export interface ServerEvents {
-	"deal-hand": (payload: DealHandPayload, callback: () => void) => void;
 	"new-turn": (payload: NewTurnPayload) => void;
+	"team-selection": (payload: TeamSelectionPayload) => void;
+	"game-start": (gameStart: boolean, callback: (start: boolean) => void) => void;
 	// "new-round": (payload: NewRoundPayload, callback: () => void) => void;
 }
 
@@ -14,13 +17,13 @@ export interface SocketError {
 	errorType: "rejected" | "server";
 }
 
-interface ServerSuccess {
-	data: Object;
+export interface PlayerReadyState {
+	idempotencyKey: string;
+	ready: boolean;
 }
 
-type ServerResponse<T> = SocketError | ServerSuccess;
-
-export interface playerReadyPayload {
+export interface PlayerReadyPayload {
+	idempotencyKey: string;
 	playerId: string;
 }
 
@@ -31,9 +34,24 @@ export interface PlayerDetails {
 	name: string;
 	order: number; // 1 through 6
 	team: Team;
+	playerId: string;
+}
+
+export interface TeamSelectionPayload {
+	team1: PlayerDetails[];
+	team2: PlayerDetails[];
+}
+
+export interface TeamSwitchPayload {
+	idempotencyKey: string;
+	playerId: string;
 }
 
 export interface DealHandPayload {
+	playerId: string;
+}
+
+export interface DealHandResponse {
 	hand: number[];
 	playerDetails: PlayerDetails[];
 	playerOrder: number;

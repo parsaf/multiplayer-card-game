@@ -2,8 +2,7 @@ import dotenv from "dotenv";
 import express from "express";
 import http from "http";
 import { Server } from "socket.io";
-import cors from "cors";
-import { playerReadyHandler, playerJoinHandler, turnCompleteHandler } from "./handlers";
+import { playerReadyHandler, getPlayerJoinHandler, turnCompleteHandler, switchTeamHandler, dealHandHandler, getStartGameHandler } from "./handlers";
 import * as events from "../src/events/SocketEvents";
 
 dotenv.config();
@@ -15,12 +14,15 @@ const io: Server<events.ClientEvents, events.ServerEvents> = new Server(server);
 
 
 // joining the party
-app.get("/join", playerJoinHandler);
+app.get("/join", getPlayerJoinHandler(io));
+app.get("/start", getStartGameHandler(io));
 
 
 io.on("connection", (socket) => {
-    socket.on("ready", (payload, callback) => playerReadyHandler(payload, callback, io, socket));
+    socket.on("ready-state", (payload, callback) => playerReadyHandler(payload, callback, io, socket));
     socket.on("turn-complete", (payload, callback) => turnCompleteHandler(payload, callback, io, socket));
+    socket.on("switch-team", (payload, callback) => switchTeamHandler(payload, callback, io, socket));
+    socket.on("deal-hand", dealHandHandler);
 });
 
 server.listen(PORT, () => {

@@ -2,9 +2,19 @@
     "section1": {
         "files": [
             {
+                "url": "assets/cancel.png",
+                "type": "image",
+                "key": "cancel"
+            },
+            {
                 "url": "assets/carpet.png",
                 "type": "image",
                 "key": "carpet"
+            },
+            {
+                "url": "assets/check-mark.png",
+                "type": "image",
+                "key": "check-mark"
             },
             {
                 "url": "assets/FufuSuperDino.png",

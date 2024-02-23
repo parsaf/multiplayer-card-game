@@ -10,7 +10,6 @@ import Phaser from "phaser";
 import RedPlayer from "./RedPlayer";
 import BluePlayer from "./BluePlayer";
 import DropZonePrefab from "./DropZonePrefab";
-import EnterNamePrefab from "./EnterNamePrefab";
 /* START-USER-IMPORTS */
 import HandCard, { CARD_HEIGHT, CARD_WIDTH } from "./HandCard";
 import type * as Events from "../events/SocketEvents";
@@ -74,16 +73,12 @@ export default class Level extends Phaser.Scene {
 		ourScore.text = "Us: 0";
 		ourScore.setStyle({ "backgroundColor": "#00ccffff", "fontSize": "22px", "stroke": "#000000ff", "strokeThickness":4});
 
-		// turnStatus
-		const turnStatus = this.add.rectangle(360, 1214, 714, 128);
-		turnStatus.visible = false;
-		turnStatus.isStroked = true;
-		turnStatus.strokeColor = 589614;
-		turnStatus.lineWidth = 6;
-
-		// nameInputModal
-		const nameInputModal = new EnterNamePrefab(this, 360, 640);
-		this.add.existing(nameInputModal);
+		// myTurnStatus
+		const myTurnStatus = this.add.rectangle(360, 1214, 714, 128);
+		myTurnStatus.visible = false;
+		myTurnStatus.isStroked = true;
+		myTurnStatus.strokeColor = 589614;
+		myTurnStatus.lineWidth = 6;
 
 		this.opponent_2 = opponent_2;
 		this.team_mate_1 = team_mate_1;
@@ -93,8 +88,7 @@ export default class Level extends Phaser.Scene {
 		this.dropZone = dropZone;
 		this.theirScore = theirScore;
 		this.ourScore = ourScore;
-		this.myTurnStatus = turnStatus;
-		this.nameInputModal = nameInputModal;
+		this.myTurnStatus = myTurnStatus;
 
 		this.events.emit("scene-awake");
 	}
@@ -108,7 +102,6 @@ export default class Level extends Phaser.Scene {
 	private theirScore!: Phaser.GameObjects.Text;
 	private ourScore!: Phaser.GameObjects.Text;
 	private myTurnStatus!: Phaser.GameObjects.Rectangle;
-	private nameInputModal!: EnterNamePrefab;
 
 	/* START-USER-CODE */
 	rexUI!: RexUIPlugin;
@@ -128,14 +121,22 @@ export default class Level extends Phaser.Scene {
 	private completedTurns: number = 0;
 	private nextPlayer: number = 1;
 
+	init(data: {
+		playerId: string,
+		playerName: string,
+		socket: Socket<Events.ServerEvents, Events.ClientEvents>,
+		team: Events.Team,
+	}) {
+		console.log("init", data);
+		this.playerId = data.playerId;
+		this.playerName = data.playerName;
+		this.socket = data.socket;
+		this.myTeam = data.team;
+	}
+
 	create() {
 		this.editorCreate();
 		console.log("create");
-
-		this.socket = io('/', {
-			retries: 10,
-			timeout: TIMEOUT * 5,
-		});
 
 		// TODO get game state
 		// this.socket.on("connect", () => {
@@ -143,7 +144,7 @@ export default class Level extends Phaser.Scene {
 		this.input.on("dragstart", this.dragStartHandler, this);
 		this.input.on("drag", this.dragHandler, this);
 		this.input.on("dragend", this.dragEndHandler, this);
-		this.dealHandListener();
+		this.emitDealHand();
 		this.newTurnListener();
 	}
 
@@ -191,7 +192,6 @@ export default class Level extends Phaser.Scene {
 			player.addPlayerName(detail.name);
 			this.playersByOrder.set(detail.order, player);
 		}
-		this.myTeam = playerDetails[playerOrder - 1].team;
 	}
 
 	performLastTurn(payload: Events.NewTurnPayload) {
@@ -225,9 +225,9 @@ export default class Level extends Phaser.Scene {
 			throw Error("Coudln't find last player with player order " + lastPlayerOrder.toString());
 		}
 		lastPlayer.setTurnStatus(true);
-		
+
 		console.log("updating the card pile", payload.cardsPlayed, lastPlayer.x, lastPlayer.y);
-		
+
 		// check if current card pile match the previous cards played
 		const doCardsMatch = true;
 		const pileItems = this.cardPile.getElement('items') as HandCard[];
@@ -279,16 +279,6 @@ export default class Level extends Phaser.Scene {
 	}
 
 	////////// socket event listener //////////
-	dealHandListener() {
-		console.log("deal hand listener");
-		this.socket.on("deal-hand", (payload, callback) => {
-			callback();
-			console.log("got hand");
-			this.dealPlayerHand(payload.hand);
-			this.setPlayerNames(payload.playerOrder, payload.playerDetails);
-		});
-	}
-
 	newTurnListener() {
 		console.log("new turn listener");
 		this.socket.on("new-turn", (payload) => {
@@ -322,36 +312,6 @@ export default class Level extends Phaser.Scene {
 			}
 		});
 
-	}
-
-	////////// Text edit event handler //////////
-	onPlayerNameSubmit(textObject: Phaser.GameObjects.Text) {
-		if (this.playerName) {
-			return;
-		}
-		this.playerName = textObject.text;
-		console.log("name entered", this.playerName);
-
-		this.nameInputModal.destroy();
-
-		fetchRetry(SERVER_URL + "/join?" + qs.stringify({name: this.playerName})).then((res) => {
-			console.log("made request");
-			if (!res.ok) {
-				throw new Error(`HTTP error! Status: ${res.status}`);
-			}
-			return res.json();
-		}).then((json) => {
-			console.log("json parsed", json["playerId"]);
-			this.playerId = json["playerId"];
-			// tell server player is ready
-			this.socket.emit("ready", { playerId: this.playerId }, (err) => {
-				console.log("ready emitted");
-				if (err) {
-					console.error(err);
-					throw Error(err.error);
-				}
-			});
-		});
 	}
 
 	////////// card drag event handlers //////////
@@ -461,6 +421,22 @@ export default class Level extends Phaser.Scene {
 		this.playersByOrder.forEach((player) => player.setTurnStatus(false));
 		this.myTurnStatus.setVisible(false);
 		this.updateScore(payload.team1Score, payload.team2Score);
+	}
+
+	emitDealHand() {
+		console.log("deal hand listener");
+		const payload: Events.DealHandPayload = {
+			playerId: this.playerId,
+		};
+		this.socket.emit("deal-hand", payload, (res) => {
+			console.log("got hand", res);
+			if (!res) {
+				console.error("no hand received");
+				return;
+			}
+			this.dealPlayerHand(res.hand);
+			this.setPlayerNames(res.playerOrder, res.playerDetails);
+		});
 	}
 	/* END-USER-CODE */
 }

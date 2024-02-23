@@ -130,7 +130,7 @@
         {
             "type": "Rectangle",
             "id": "e6568c8b-723f-4fbd-b302-02899472eaf7",
-            "label": "turnStatus",
+            "label": "myTurnStatus",
             "scope": "CLASS",
             "x": 360,
             "y": 1214,
@@ -140,18 +140,6 @@
             "isStroked": true,
             "width": 714,
             "height": 128
-        },
-        {
-            "prefabId": "0bd70489-f5a9-434d-a942-7e1ee460bc35",
-            "id": "8313a62b-dffa-475d-8f10-f50aa340b432",
-            "unlock": [
-                "x",
-                "y"
-            ],
-            "label": "nameInputModal",
-            "scope": "CLASS",
-            "x": 360,
-            "y": 640
         }
     ],
     "plainObjects": [],

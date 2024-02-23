@@ -1,3 +1,4 @@
+import { RequestHandler } from "express";
 import { Socket, Server } from "socket.io";
 import { Request, Response } from "express";
 import { randomUUID } from "crypto";
@@ -16,7 +17,7 @@ interface Player {
 
 
 // constants
-const MAX_PLAYER_COUNT = 3; // TODO: change this to 6
+const MAX_PLAYER_COUNT = 4; // TODO: change this to 6
 const EMIT_TIMEOUT = 1000;
 const ROUNDS_PER_GAME = 9;
 
@@ -30,71 +31,97 @@ let cardsPlayed: number[] = [];
 let nextPlayer: Player;
 let team1Score = 0;
 let team2Score = 0;
-
+const idempotencyKeys = new Set<string>();
 
 ////////////////// REST handler //////////////////
-export function playerJoinHandler(request: Request, response: Response) {
-    console.log('join started', request.query);
-    const { name } = request.query;
-    if (playerById.size < MAX_PLAYER_COUNT) {
-        const playerId = randomUUID();
-        const playerOrder = players.length + 1;
-        const player: Player = {
-            name: name as string,
-            hand: [],
-            id: playerId,
-            ready: false,
-            order: playerOrder,
-            team: playerOrder % 2 === 1 ? 'TEAM_1' : 'TEAM_2',
-        };
-        playerById.set(playerId, player);
-        players.push(player);
-        response.status(200).json({ playerId: playerId, order: player.order });
+export function getPlayerJoinHandler(io: Server<events.ClientEvents, events.ServerEvents>): RequestHandler {
+    console.log('getPlayerJoinHandler');
+    function playerJoinHandler(request: Request, response: Response) {
+        console.log('join started', request.query);
+        const { name } = request.query;
+        if (playerById.size < MAX_PLAYER_COUNT) {
+            const playerId = randomUUID();
+            const playerOrder = players.length + 1;
+            const player: Player = {
+                name: name as string,
+                hand: [],
+                id: playerId,
+                ready: false,
+                order: playerOrder,
+                team: playerOrder % 2 === 1 ? 'TEAM_1' : 'TEAM_2',
+            };
+            playerById.set(playerId, player);
+            players.push(player);
+            response.status(200).json({ playerId: playerId, team: player.team });
+            emitTeamSelection(io);
+        }
+        else {
+            response.status(503).json({ error: "Server at capacity!" });
+        }
     }
-    else {
-        response.status(503).json({ error: "Server at capacity!" });
-    }
+    return playerJoinHandler;
 }
 
+export function getStartGameHandler(io: Server<events.ClientEvents, events.ServerEvents>): RequestHandler {
+    return function startGameHandler(request: Request, response: Response) {
+        console.log('start Game Handler', request.query);
+        const { starterPlayerId, trump } = request.query;
+        if (starterPlayerId && playerById.has(starterPlayerId.toString())) {
+            response.status(200).json({ message: "Game started" });
+            // start turn 1
+            round = 1;
+            nextPlayer = players.find((player) => player.order === 1)!;
+            newTurn(io);
+        } else {
+            response.status(400).json({ error: "Invalid request" });
+        }
+    };
+}
 
 ////////////////// event handlers //////////////////
 export function playerReadyHandler(
-    payload: events.playerReadyPayload,
-    callback: (res?: events.SocketError) => void,
+    payload: events.PlayerReadyPayload,
+    callback: (res?: events.PlayerReadyState) => void,
     io: Server<events.ClientEvents, events.ServerEvents>,
     socket: Socket<events.ClientEvents, events.ServerEvents>,
 ) {
-    console.log("ready event handler", payload);
-    const { playerId } = payload;
+    console.log("ready-state event handler", payload);
+    const { playerId, idempotencyKey } = payload;
+
     const player = playerById.get(playerId);
-    if (player != undefined) {
-        if (player.ready) {
-            console.log("player already read");
-            callback();
-            return;
-        } else if (gameStarted) {
-            console.log("game already started");
+    if (player) {
+
+        // check if idempotency key has been used
+        if (idempotencyKeys.has(idempotencyKey)) {
+            console.log("idempotency key already used");
             callback({
-                error: "game already started",
-                errorType: "rejected",
+                ready: player.ready,
+                idempotencyKey: idempotencyKey,
             });
             return;
         }
-        player.ready = true;
+        idempotencyKeys.add(idempotencyKey);
+
+        if (gameStarted) {
+            console.log("game already started");
+            callback();
+            return;
+        }
+        player.ready = !player.ready;
         player.socket = socket;
         console.log("player set ready", player);
-
-        if (players.length === MAX_PLAYER_COUNT && players.every((player) => player.ready)) {
+        console.log("start conditions", players.length === MAX_PLAYER_COUNT, players.every((player) => player.ready), players.filter((player) => player.team === "TEAM_1").length === Math.floor(MAX_PLAYER_COUNT / 2));
+        if (players.length === MAX_PLAYER_COUNT && players.every((player) => player.ready) && players.filter((player) => player.team === "TEAM_1").length === Math.floor(MAX_PLAYER_COUNT / 2)) {
             console.log("ready to start game");
             startGame(io);
         }
-       callback();
+       callback({
+            ready: player.ready,
+            idempotencyKey: idempotencyKey,
+        });
         // TODO: add broadcast to tell players of join.
     } else {
-        callback({
-            error: "invalid player ID",
-            errorType: "rejected",
-        });
+        callback();
     }
 }
 
@@ -135,22 +162,59 @@ export function turnCompleteHandler(
     }
 }
 
+export function switchTeamHandler(
+    payload: events.TeamSwitchPayload,
+    callback: (res?: events.SocketError) => void,
+    io: Server<events.ClientEvents, events.ServerEvents>,
+    socket: Socket<events.ClientEvents, events.ServerEvents>,
+) {
+    console.log("switch-team event handler", payload);
+    const { playerId, idempotencyKey } = payload;
 
-////////////////// event emitters //////////////////
-function emitWithRetry(socket: Socket<events.ClientEvents, events.ServerEvents>, event: keyof events.ServerEvents, payload: any, retries = 3) {
-    socket.timeout(EMIT_TIMEOUT).emit(event, payload, (err) => {
-        if (err && retries > 0) {
-            emitWithRetry(socket, event, payload, retries - 1);
-        }
+    // check if idempotency key has been used
+    if (idempotencyKeys.has(idempotencyKey)) {
+        console.log("idempotency key already used");
+        callback();
+        return;
+    }
+    idempotencyKeys.add(idempotencyKey);
+
+    const player = playerById.get(playerId);
+    if (player) {
+        player.team = player.team === "TEAM_1" ? "TEAM_2" : "TEAM_1";
+        // set player not ready
+        player.ready = false;
+        callback();
+        // emit team selection event
+        emitTeamSelection(io);
+        return;
+    }
+    callback({
+        error: "invalid player ID",
+        errorType: "rejected",
     });
 }
 
-function emitDealHand(player: Player) {
+
+
+export function dealHandHandler(
+    payload: events.DealHandPayload,
+    callback: (res?: events.DealHandResponse) => void,
+) {
+    const player = playerById.get(payload.playerId);
+    if (!player || !player.hand) {
+        console.log("player not found or hand not dealt yet", payload.playerId);
+        callback();
+        return;
+    }
+    console.log("deal-hand event handler", player);
+
     const playerDetails = players.map<events.PlayerDetails>((player) => {
         return {
             name: player.name,
             team: player.team,
-            order: player.order
+            order: player.order,
+            playerId: player.id,
         };
     });
     // const playerDetails: events.PlayerDetails[] = [
@@ -185,13 +249,22 @@ function emitDealHand(player: Player) {
     //         order: 6,
     //     },
     // ];
-    const payload: events.DealHandPayload = {
+    const response: events.DealHandResponse = {
         hand: player.hand,
         playerDetails: playerDetails,
         playerOrder: player.order,
     };
-    console.log("deal-hand event ", payload);
-    emitWithRetry(player.socket!, "deal-hand", payload);
+    console.log("deal-hand response ", response);
+    callback(response);
+}
+
+////////////////// event emitters //////////////////
+function emitWithRetry(socket: Socket<events.ClientEvents, events.ServerEvents>, event: keyof events.ServerEvents, payload: any, retries = 3) {
+    socket.timeout(EMIT_TIMEOUT).emit(event, payload, (err: Error) => {
+        if (err && retries > 0) {
+            emitWithRetry(socket, event, payload, retries - 1);
+        }
+    });
 }
 
 function emitNewTurn(io: Server<events.ClientEvents, events.ServerEvents>, payload: events.NewTurnPayload ) {
@@ -200,10 +273,64 @@ function emitNewTurn(io: Server<events.ClientEvents, events.ServerEvents>, paylo
     io.timeout(EMIT_TIMEOUT).emit("new-turn", payload);
 }
 
+function emitTeamSelection(io: Server<events.ClientEvents, events.ServerEvents>) {
+    const team1 = players.filter((player) => player.team === "TEAM_1").map((player) => {
+        return {
+            name: player.name,
+            team: player.team,
+            order: player.order,
+            playerId: player.id,
+        };
+    });
+    
+    const team2 = players.filter((player) => player.team === "TEAM_2").map((player) => {
+        return {
+            name: player.name,
+            team: player.team,
+            order: player.order,
+            playerId: player.id,
+        };
+    });
+
+    // sort team members alphabetically
+    team1.sort((a, b) => a.name.localeCompare(b.name));
+    team2.sort((a, b) => a.name.localeCompare(b.name));
+
+    const payload: events.TeamSelectionPayload = {
+        team1: team1,
+        team2: team2,
+    };
+    console.log("emit team-selection event", payload);
+    io.timeout(EMIT_TIMEOUT).emit("team-selection", payload);
+}
+
+function emitGameStart(io: Server<events.ClientEvents, events.ServerEvents>) {
+    console.log("emit game-start event");
+    io.timeout(EMIT_TIMEOUT).emit("game-start", true, (err, start) => {
+        if (err) {
+            console.log("game-start some clients didn't acknowledge");
+        }
+        console.log("game-start event acknowledged");
+    });
+}
+
 ////////////////// game logic //////////////////
 function startGame(io: Server<events.ClientEvents, events.ServerEvents>) {
 
     console.log("startGame");
+
+    let team1Counter = 0;
+    let team2Counter = 0;
+    for (let i = 0; i < players.length; i++) {
+        // assign player orders so that team 1 has odd orders and team 2 has even orders
+        if (players[i].team === "TEAM_1") {
+            players[i].order = team1Counter * 2 + 1;
+            team1Counter += 1;
+        } else {
+            players[i].order = team2Counter * 2 + 2;
+            team2Counter += 1;
+        }
+    }
 
     gameStarted = true;
     // deck of 54 cards (with 2 jokers)
@@ -219,14 +346,10 @@ function startGame(io: Server<events.ClientEvents, events.ServerEvents>) {
         }
         player.hand = deck.slice(0, 9);
         deck.splice(0, 9);
-        emitDealHand(player);
+        // emitDealHand(player);
     }
 
-    // start turn 1
-    round = 1;
-    nextPlayer = players.find((player) => player.order === 1)!;
-    newTurn(io);
-
+    emitGameStart(io);
 }
 
 function completeTurn(currentPlayer: Player, card: number, turn: number, io: Server<events.ClientEvents, events.ServerEvents>) {
@@ -288,4 +411,9 @@ function shuffle<T>(array: T[]) {
         currentIndex--;
         [array[currentIndex], array[randIndex]] = [array[randIndex], array[currentIndex]];
     }
+}
+
+export function printConnection(socket: Socket<events.ClientEvents, events.ServerEvents>) {
+    const player = players.filter((player) => player.socket === socket)[0];
+    console.log('a user connected', player);
 }
