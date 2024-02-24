@@ -17,6 +17,7 @@ import RexUIPlugin from 'phaser3-rex-plugins/templates/ui/ui-plugin.js';
 import { io, Socket } from "socket.io-client";
 import qs from "qs";
 import fetchBuilder from "fetch-retry";
+import { v4 as uuidv4 } from "uuid";
 
 const fetchRetry = fetchBuilder(fetch);
 type OtherPlayer = RedPlayer | BluePlayer;
@@ -402,6 +403,7 @@ export default class Level extends Phaser.Scene {
 
 	completeMyTurn(cardValue: number) {
 		this.socket.emit("turn-complete", {
+			idempotencyKey: uuidv4(),
 			playerId: this.playerId,
 			card: cardValue,
 			turn: this.myOrder,

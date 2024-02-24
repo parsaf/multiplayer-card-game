@@ -70,6 +70,7 @@ export interface NewTurnPayload {
 }
 
 export interface TurnCompletePayload {
+	idempotencyKey: string;
 	playerId: string;
 	card: number;
 	turn: number; // 1 through 6
