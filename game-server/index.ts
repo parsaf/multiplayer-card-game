@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 import express from "express";
 import http from "http";
 import { Server } from "socket.io";
-import { Handlers } from "./handlers";
+import { GameHandlers } from "./handlers";
 import * as events from "../src/events/SocketEvents";
 
 dotenv.config();
@@ -11,7 +11,7 @@ const server = http.createServer(app);
 const PORT = process.env.PORT;
 const FRONTEND_URL = process.env.FRONTEND_URL;
 const io: Server<events.ClientEvents, events.ServerEvents> = new Server(server);
-const handlers = new Handlers();
+const handlers = new GameHandlers();
 
 
 // joining the party

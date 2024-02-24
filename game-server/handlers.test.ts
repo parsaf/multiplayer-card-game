@@ -1,4 +1,4 @@
-import { Handlers, NewCardPlayed, CardPlayed, Suit, Player, Card } from './handlers';
+import { GameHandlers, NewCardPlayed, CardPlayed, Suit, Player, Card } from './handlers';
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
 
@@ -27,19 +27,49 @@ describe('findWinningCard', () => {
       },
     ];
 
-    const handlers = new Handlers();
+    const handlers = new GameHandlers();
     handlers.cardsPlayed = cardsPlayed;
     handlers.trumpSuit = Suit.HEART;
 
     const winningCard = handlers.findWinningCard();
 
-    assert.strictEqual(winningCard, cardsPlayed[0]);
+    assert.strictEqual(winningCard, cardsPlayed[2]);
+  });
+
+  it( 'should return red joker over black joker', () => {
+    const card_1 = { faceValue: 7, suit:  Suit.DIAMOND, };
+    const card_2 ={ faceValue: 3, suit: Suit.HEART };
+    const card_3 = { faceValue: 2, suit: Suit.JOKER };
+    const card_4 = { faceValue: 1, suit: Suit.JOKER };
+
+    const cardsPlayed: CardPlayed[] = [
+      { 
+        card: card_1 as Card, player: PLAYER_1 as Player,
+      },
+      { 
+        card: card_2 as Card, player: PLAYER_2 as Player,
+      },
+      { 
+        card: card_3 as Card, player: PLAYER_3 as Player,
+      },
+      { 
+        card: card_4 as Card, player: PLAYER_4 as Player,
+      },
+    ];
+
+    const handlers = new GameHandlers();
+    handlers.cardsPlayed = cardsPlayed;
+    handlers.trumpSuit = Suit.HEART;
+
+    const winningCard = handlers.findWinningCard();
+
+    assert.strictEqual(winningCard, cardsPlayed[2]);
   });
 
   it('should return the highest card of the same suit when no joker is played', () => {
-    const card_1 = { faceValue: 1, suit:  Suit.HEART, };
+    const card_1 = { faceValue: 7, suit:  Suit.HEART, };
     const card_2 ={ faceValue: 3, suit: Suit.HEART };
-    const card_3 = { faceValue: 7, suit: Suit.HEART };
+    const card_3 = { faceValue: 1, suit: Suit.HEART };
 
     const cardsPlayed: CardPlayed[] = [
       { 
@@ -53,13 +83,13 @@ describe('findWinningCard', () => {
       },
     ];
 
-    const handlers = new Handlers();
+    const handlers = new GameHandlers();
     handlers.cardsPlayed = cardsPlayed;
     handlers.trumpSuit = Suit.HEART;
 
     const winningCard = handlers.findWinningCard();
 
-    assert.strictEqual(winningCard, cardsPlayed[2]);
+    assert.strictEqual(winningCard, cardsPlayed[0]);
   });
 
   it('should return the highest trump card when no joker is played', () => {
@@ -79,7 +109,7 @@ describe('findWinningCard', () => {
       },
     ];
 
-    const handlers = new Handlers();
+    const handlers = new GameHandlers();
     handlers.cardsPlayed = cardsPlayed;
     handlers.trumpSuit = Suit.HEART;
 
@@ -105,7 +135,7 @@ describe('findWinningCard', () => {
       },
     ];
 
-    const handlers = new Handlers();
+    const handlers = new GameHandlers();
     handlers.cardsPlayed = cardsPlayed;
     handlers.trumpSuit = Suit.SPADE;
 

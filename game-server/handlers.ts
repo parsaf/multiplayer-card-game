@@ -9,7 +9,6 @@ export interface Player {
     name: string;
     hand: number[];
     id: string;
-    socket?: Socket<events.ClientEvents, events.ServerEvents>;
     ready: boolean;
     order: number;
     team: events.Team;
@@ -41,7 +40,7 @@ const EMIT_TIMEOUT = 1000;
 const ROUNDS_PER_GAME = 9;
 const SUIT_ORDERING = [Suit.DIAMOND, Suit.SPADE, Suit.HEART, Suit.CLUB]
 
-export class Handlers {
+export class GameHandlers {
     playerById: Map<string, Player>;
     players: Player[];
     gameStarted;
@@ -81,7 +80,6 @@ export class Handlers {
         this.emitTeamSelection = this.emitTeamSelection.bind(this);
         this.emitGameStart = this.emitGameStart.bind(this);
         this.findWinningCard = this.findWinningCard.bind(this);
-        this.printConnection = this.printConnection.bind(this);
         
     }
 
@@ -163,7 +161,6 @@ export class Handlers {
                 return;
             }
             player.ready = !player.ready;
-            player.socket = socket;
             console.log("player set ready", player);
             console.log("start conditions", this.players.length === MAX_PLAYER_COUNT, this.players.every((player) => player.ready), this.players.filter((player) => player.team === "TEAM_1").length === Math.floor(MAX_PLAYER_COUNT / 2));
             if (this.players.length === MAX_PLAYER_COUNT && this.players.every((player) => player.ready) && this.players.filter((player) => player.team === "TEAM_1").length === Math.floor(MAX_PLAYER_COUNT / 2)) {
@@ -399,10 +396,6 @@ export class Handlers {
 
         // deal hand
         for (const [id, player] of this.playerById) {
-            if (!player.socket) {
-                console.error("no socket found for client id: ", id);
-                continue;
-            }
             player.hand = deck.slice(0, 9);
             deck.splice(0, 9);
             // emitDealHand(player);
@@ -469,12 +462,6 @@ export class Handlers {
         }
     }
 
-    ////////////////// utils //////////////////
-    printConnection(socket: Socket<events.ClientEvents, events.ServerEvents>) {
-        const player = this.players.filter((player) => player.socket === socket)[0];
-        console.log('a user connected', player);
-    }
-
     findWinningCard(): CardPlayed {
         console.log('finding winning card in cards played: ', this.cardsPlayed.map((cardPlayed) => [cardPlayed.card.faceValue, cardPlayed.card.suit]));
         const handSuit = this.cardsPlayed[0].card.suit;
@@ -491,18 +478,11 @@ export class Handlers {
         for (const cardPlayed of this.cardsPlayed) {
 
             console.log('comparing card: ', cardPlayed.card.faceValue, cardPlayed.card.suit);
-            if (cardPlayed.card.suit === Suit.JOKER) {
-                console.log('joker card');
-                winningCard = winningCard.card.suit !== Suit.JOKER || cardPlayed.card.faceValue > winningCard.card.faceValue? cardPlayed : winningCard;
-            } else if (cardPlayed.card.suit === this.trumpSuit) {
-                console.log('trump card');
-                // if the card is a trump card and the winning card is not a trump card or the card is higher than the winning card
-                winningCard = winningCard.card.suit !== this.trumpSuit || cardPlayed.card.faceValue > winningCard.card.faceValue ? cardPlayed : winningCard;
-            }
-            else if (cardPlayed.card.suit === winningCard.card.suit && cardPlayed.card.faceValue > winningCard.card.faceValue) {
-                console.log('higher card of same suit')
+            
+            if (isCardBeaten(winningCard, cardPlayed, this.trumpSuit!)) {
                 winningCard = cardPlayed;
             }
+
             console.log('winning card so far: ', winningCard.card.faceValue, winningCard.card.suit);
         }
         console.log('winning card for hand: ', winningCard.card.faceValue, winningCard.card.suit);
@@ -542,4 +522,36 @@ export function NewCardPlayed(card: number, player: Player): CardPlayed {
         card: NewCard(card),
         player: player,
     };
+}
+
+// is card2 beating card1
+function isCardBeaten(card1: CardPlayed, card2: CardPlayed, trumpSuit: Suit): boolean {
+    // red joker wins
+    if (card1.card.suit === Suit.JOKER && card1.card.faceValue === 2) {
+        return false;
+    }
+    if (card2.card.suit === Suit.JOKER && card2.card.faceValue === 2) {
+        return true;
+    }
+
+    // if no red joker played, black joker wins
+    if (card1.card.suit === Suit.JOKER && card1.card.faceValue === 1) {
+        return false;
+    }
+    if (card2.card.suit === Suit.JOKER && card2.card.faceValue === 1) {
+        return true;
+    }
+
+    // if a trump card is played against a non-trump card, the trump card wins
+    if (card1.card.suit === trumpSuit && card2.card.suit !== trumpSuit) {
+        return false;
+    }
+    if (card2.card.suit === trumpSuit && card1.card.suit !== trumpSuit) {
+        return true;
+    }
+
+    // otherwise the higher card of the same suit wins
+    return card1.card.suit === card2.card.suit && card2.card.faceValue > card1.card.faceValue;
+
+
 }
