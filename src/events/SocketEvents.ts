@@ -6,7 +6,7 @@ export interface ClientEvents {
 }
 
 export interface ServerEvents {
-	"new-turn": (payload: NewTurnPayload) => void;
+	"new-turn": (payload: NewTurnPayload, callback: (recieved: boolean) => void) => void;
 	"team-selection": (payload: TeamSelectionPayload) => void;
 	"game-start": (gameStart: boolean, callback: (start: boolean) => void) => void;
 	// "new-round": (payload: NewRoundPayload, callback: () => void) => void;
@@ -62,7 +62,6 @@ export interface NewTurnPayload {
 	lastTurn: number; // 1 through 6
 	cardsPlayed: number[]; // cards played in previous turns of the same round
 	round: number; // 1 through 9
-	lastCard?: number; // card played by the last player
 	lastPlayer?: number; // order of the last player
 	team1Score: number;
 	team2Score: number;

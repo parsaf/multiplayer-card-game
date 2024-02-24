@@ -53,6 +53,7 @@ export class GameHandlers {
     team2Score: number;
     idempotencyKeys: Set<string>;
     trumpSuit?: Suit;
+    lastEmittedTurn?: events.NewTurnPayload;
 
     // class constructor
     constructor() {
@@ -124,6 +125,7 @@ export class GameHandlers {
                 // start turn 1
                 this.round = 1;
                 this.nextPlayer = this.playerById.get(starterPlayerId.toString())!;
+                this.gameStarted = true;
                 this.newTurn(io);
             } else {
                 response.status(400).json({ error: "Invalid request" });
@@ -326,7 +328,13 @@ export class GameHandlers {
     emitNewTurn(io: Server<events.ClientEvents, events.ServerEvents>, payload: events.NewTurnPayload ) {
         console.log("emit next-turn event", payload);
         console.log('cards played: ', this.cardsPlayed);
-        io.timeout(EMIT_TIMEOUT).emit("new-turn", payload);
+        this.lastEmittedTurn = payload;
+        io.timeout(EMIT_TIMEOUT).emit("new-turn", payload, (err, received) => {
+            if (err) {
+                console.log("new-turn some clients didn't acknowledge");
+            }
+            console.log("new-turn event acknowledged");
+        });
     }
 
     emitTeamSelection(io: Server<events.ClientEvents, events.ServerEvents>) {
@@ -388,7 +396,6 @@ export class GameHandlers {
             }
         }
 
-        this.gameStarted = true;
         // deck of 54 cards (with 2 jokers)
         const deck = Array.from(Array(53).keys());
         shuffle(deck);
@@ -420,7 +427,6 @@ export class GameHandlers {
         const payload: events.NewTurnPayload = {
             nextPlayer: this.completedTurns === MAX_PLAYER_COUNT ? undefined : this.nextPlayer?.order,
             lastTurn: this.completedTurns,
-            lastCard: lastCard,
             lastPlayer: lastPlayer?.order,
             round: this.round,
             team1Score: this.team1Score,
@@ -446,7 +452,6 @@ export class GameHandlers {
             const payload: events.NewTurnPayload = {
                 nextPlayer: this.nextPlayer.order,
                 lastTurn: this.completedTurns,
-                lastCard: lastCard,
                 lastPlayer: lastPlayer?.order,
                 round: this.round,
                 team1Score: this.team1Score,
@@ -488,8 +493,23 @@ export class GameHandlers {
         console.log('winning card for hand: ', winningCard.card.faceValue, winningCard.card.suit);
         return winningCard;
     }
+
+    reconnectionHandler(socket: Socket<events.ClientEvents, events.ServerEvents>) {
+        console.log("(re)connection handler");
+        if (this.gameStarted && this.lastEmittedTurn) {
+            // emit last turn
+            socket.timeout(EMIT_TIMEOUT).emit("new-turn", this.lastEmittedTurn, (err, received) => {
+                if (err) {
+                    console.log("new-turn reconnected client didn't acknowledge");
+                }
+                console.log("new-turn event acknowledged");
+            });
+        }
+    }
 }
 
+
+// utility functions
 
 function shuffle<T>(array: T[]) {
     let currentIndex = array.length, randIndex = 0;

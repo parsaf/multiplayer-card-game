@@ -20,6 +20,7 @@ app.get("/start", handlers.getStartTurnsHandler(io));
 
 
 io.on("connection", (socket) => {
+    handlers.reconnectionHandler(socket);
     socket.on("ready-state", (payload, callback) => handlers.playerReadyHandler(payload, callback, io, socket));
     socket.on("turn-complete", (payload, callback) => handlers.turnCompleteHandler(payload, callback, io, socket));
     socket.on("switch-team", (payload, callback) => handlers.switchTeamHandler(payload, callback, io, socket));
