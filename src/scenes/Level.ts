@@ -145,7 +145,7 @@ export default class Level extends Phaser.Scene {
 		this.input.on("dragstart", this.dragStartHandler, this);
 		this.input.on("drag", this.dragHandler, this);
 		this.input.on("dragend", this.dragEndHandler, this);
-		this.emitDealHand();
+		this.emitGetHand();
 		this.newTurnListener();
 	}
 
@@ -425,12 +425,12 @@ export default class Level extends Phaser.Scene {
 		this.updateScore(payload.team1Score, payload.team2Score);
 	}
 
-	emitDealHand() {
-		console.log("deal hand listener");
+	emitGetHand() {
+		console.log("get hand emitted");
 		const payload: Events.DealHandPayload = {
 			playerId: this.playerId,
 		};
-		this.socket.emit("deal-hand", payload, (res) => {
+		this.socket.emit("get-hand", payload, (res) => {
 			console.log("got hand", res);
 			if (!res) {
 				console.error("no hand received");

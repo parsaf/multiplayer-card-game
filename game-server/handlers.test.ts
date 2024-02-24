@@ -1,51 +1,116 @@
-import { findWinningCard } from './handlers';
+import { Handlers, NewCardPlayed, CardPlayed, Suit, Player, Card } from './handlers';
+import { describe, it } from 'node:test';
+import assert from 'node:assert';
+
+
+const PLAYER_1 = { name: '1'};
+const PLAYER_2 = { name: '2'};
+const PLAYER_3 = { name: '3'};
+const PLAYER_4 = { name: '4'};
 
 describe('findWinningCard', () => {
-  it('should return the winning card when the first card is a joker', () => {
-    const cardsPlayed = [
-      { card: { faceValue: 5, suit: 'JOKER' } },
-      { card: { faceValue: 3, suit: 'HEARTS' } },
-      { card: { faceValue: 7, suit: 'DIAMONDS' } },
+  it('should return the joker over trump or high card', () => {
+  
+    const card_1 = { faceValue: 7, suit:  Suit.DIAMOND, };
+    const card_2 ={ faceValue: 3, suit: Suit.HEART };
+    const card_3 = { faceValue: 1, suit: Suit.JOKER };
+
+    const cardsPlayed: CardPlayed[] = [
+      { 
+        card: card_1 as Card, player: PLAYER_1 as Player,
+      },
+      { 
+        card: card_2 as Card, player: PLAYER_2 as Player,
+      },
+      { 
+        card: card_3 as Card, player: PLAYER_3 as Player,
+      },
     ];
 
-    const winningCard = findWinningCard(cardsPlayed);
+    const handlers = new Handlers();
+    handlers.cardsPlayed = cardsPlayed;
+    handlers.trumpSuit = Suit.HEART;
 
-    expect(winningCard).toEqual({ card: { faceValue: 5, suit: 'JOKER' } });
+    const winningCard = handlers.findWinningCard();
+
+    assert.strictEqual(winningCard, cardsPlayed[0]);
   });
 
   it('should return the highest card of the same suit when no joker is played', () => {
-    const cardsPlayed = [
-      { card: { faceValue: 5, suit: 'HEARTS' } },
-      { card: { faceValue: 3, suit: 'HEARTS' } },
-      { card: { faceValue: 7, suit: 'DIAMONDS' } },
+    const card_1 = { faceValue: 1, suit:  Suit.HEART, };
+    const card_2 ={ faceValue: 3, suit: Suit.HEART };
+    const card_3 = { faceValue: 7, suit: Suit.HEART };
+
+    const cardsPlayed: CardPlayed[] = [
+      { 
+        card: card_1 as Card, player: PLAYER_1 as Player,
+      },
+      { 
+        card: card_2 as Card, player: PLAYER_2 as Player,
+      },
+      { 
+        card: card_3 as Card, player: PLAYER_3 as Player,
+      },
     ];
 
-    const winningCard = findWinningCard(cardsPlayed);
+    const handlers = new Handlers();
+    handlers.cardsPlayed = cardsPlayed;
+    handlers.trumpSuit = Suit.HEART;
 
-    expect(winningCard).toEqual({ card: { faceValue: 5, suit: 'HEARTS' } });
+    const winningCard = handlers.findWinningCard();
+
+    assert.strictEqual(winningCard, cardsPlayed[2]);
   });
 
-  it('should return the highest trump card when no joker or same suit card is played', () => {
-    const cardsPlayed = [
-      { card: { faceValue: 5, suit: 'DIAMONDS' } },
-      { card: { faceValue: 3, suit: 'HEARTS' } },
-      { card: { faceValue: 7, suit: 'DIAMONDS' } },
+  it('should return the highest trump card when no joker is played', () => {
+    const card_1 = { faceValue: 1, suit:  Suit.HEART, };
+    const card_2 ={ faceValue: 3, suit: Suit.HEART };
+    const card_3 = { faceValue: 7, suit: Suit.DIAMOND };
+
+    const cardsPlayed: CardPlayed[] = [
+      { 
+        card: card_1 as Card, player: PLAYER_1 as Player,
+      },
+      { 
+        card: card_2 as Card, player: PLAYER_2 as Player,
+      },
+      { 
+        card: card_3 as Card, player: PLAYER_3 as Player,
+      },
     ];
 
-    const winningCard = findWinningCard(cardsPlayed);
+    const handlers = new Handlers();
+    handlers.cardsPlayed = cardsPlayed;
+    handlers.trumpSuit = Suit.HEART;
 
-    expect(winningCard).toEqual({ card: { faceValue: 7, suit: 'DIAMONDS' } });
+    const winningCard = handlers.findWinningCard();
+
+    assert.strictEqual(winningCard, cardsPlayed[1]);
   });
 
-  it('should return the first card as the winning card when all cards are jokers', () => {
-    const cardsPlayed = [
-      { card: { faceValue: 5, suit: 'JOKER' } },
-      { card: { faceValue: 3, suit: 'JOKER' } },
-      { card: { faceValue: 7, suit: 'JOKER' } },
+  it('should return the first card if none of the other cards are of the same suit nor trump', () => {
+    const card_1 = { faceValue: 1, suit:  Suit.HEART, };
+    const card_2 ={ faceValue: 3, suit: Suit.CLUB };
+    const card_3 = { faceValue: 7, suit: Suit.DIAMOND };
+
+    const cardsPlayed: CardPlayed[] = [
+      { 
+        card: card_1 as Card, player: PLAYER_1 as Player,
+      },
+      { 
+        card: card_2 as Card, player: PLAYER_2 as Player,
+      },
+      { 
+        card: card_3 as Card, player: PLAYER_3 as Player,
+      },
     ];
 
-    const winningCard = findWinningCard(cardsPlayed);
+    const handlers = new Handlers();
+    handlers.cardsPlayed = cardsPlayed;
+    handlers.trumpSuit = Suit.SPADE;
 
-    expect(winningCard).toEqual({ card: { faceValue: 5, suit: 'JOKER' } });
+    const winningCard = handlers.findWinningCard();
+
+    assert.strictEqual(winningCard, cardsPlayed[0]);
   });
 });

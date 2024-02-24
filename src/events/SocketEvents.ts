@@ -2,7 +2,7 @@ export interface ClientEvents {
 	"ready-state": (payload: PlayerReadyPayload, callback: (ready?: PlayerReadyState) => void) => void;
 	"turn-complete": (payload: TurnCompletePayload, callback: (res?: SocketError) => void) => void;
 	"switch-team": (payload: TeamSwitchPayload, callback: (res?: SocketError) => void) => void;
-	"deal-hand": (payload: DealHandPayload, callback: (res?: DealHandResponse) => void) => void;
+	"get-hand": (payload: DealHandPayload, callback: (res?: DealHandResponse) => void) => void;
 }
 
 export interface ServerEvents {

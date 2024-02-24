@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 import express from "express";
 import http from "http";
 import { Server } from "socket.io";
-import { playerReadyHandler, getPlayerJoinHandler, turnCompleteHandler, switchTeamHandler, dealHandHandler, getStartTurnsHandler } from "./handlers";
+import { Handlers } from "./handlers";
 import * as events from "../src/events/SocketEvents";
 
 dotenv.config();
@@ -11,18 +11,19 @@ const server = http.createServer(app);
 const PORT = process.env.PORT;
 const FRONTEND_URL = process.env.FRONTEND_URL;
 const io: Server<events.ClientEvents, events.ServerEvents> = new Server(server);
+const handlers = new Handlers();
 
 
 // joining the party
-app.get("/join", getPlayerJoinHandler(io));
-app.get("/start", getStartTurnsHandler(io));
+app.get("/join", handlers.getPlayerJoinHandler(io));
+app.get("/start", handlers.getStartTurnsHandler(io));
 
 
 io.on("connection", (socket) => {
-    socket.on("ready-state", (payload, callback) => playerReadyHandler(payload, callback, io, socket));
-    socket.on("turn-complete", (payload, callback) => turnCompleteHandler(payload, callback, io, socket));
-    socket.on("switch-team", (payload, callback) => switchTeamHandler(payload, callback, io, socket));
-    socket.on("deal-hand", dealHandHandler);
+    socket.on("ready-state", (payload, callback) => handlers.playerReadyHandler(payload, callback, io, socket));
+    socket.on("turn-complete", (payload, callback) => handlers.turnCompleteHandler(payload, callback, io, socket));
+    socket.on("switch-team", (payload, callback) => handlers.switchTeamHandler(payload, callback, io, socket));
+    socket.on("get-hand", handlers.getHandHandler);
 });
 
 server.listen(PORT, () => {
