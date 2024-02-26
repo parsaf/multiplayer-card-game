@@ -15,8 +15,8 @@ const handlers = new GameHandlers();
 
 
 // joining the party
-app.get("/join", handlers.getPlayerJoinHandler(io));
-app.get("/start", handlers.getStartTurnsHandler(io));
+app.get("/api/join", handlers.getPlayerJoinHandler(io));
+app.get("/api/start", handlers.getStartTurnsHandler(io));
 
 
 io.on("connection", (socket) => {
@@ -26,6 +26,8 @@ io.on("connection", (socket) => {
     socket.on("switch-team", (payload, callback) => handlers.switchTeamHandler(payload, callback, io, socket));
     socket.on("get-hand", handlers.getHandHandler);
 });
+
+app.use('', express.static('../dist'))
 
 server.listen(PORT, () => {
     console.log(`⚡️[server]: Server is running at http://localhost:${PORT}`);
