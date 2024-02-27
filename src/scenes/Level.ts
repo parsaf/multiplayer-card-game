@@ -442,18 +442,23 @@ export default class Level extends Phaser.Scene {
 	}
 
 	gameOverListener() {
-		this.socket.on("game-over", (start, callback) => {
-			console.log("game start received", start);
-			if (start) {
-				this.cardPile.clear(true);
-				this.playerHand.clear(true);
-				this.team1Score = 0;
-				this.team2Score = 0;
-				this.round = 0;
-				this.completedTurns = 0;
-				callback(true);
-				this.emitGetHand();
+		this.socket.on("game-over", (reset, callback) => {
+			console.log("game reset received", reset);
+			if (reset) {
+				// refresh whole page
+				window.location.reload();
 			}
+			this.cardPile.clear(true);
+			this.playerHand.clear(true);
+			this.updateScore(0, 0);
+			this.round = 0;
+			this.completedTurns = 0;
+			// clean out any player turn status
+			this.playersByOrder.forEach((player) => player.setTurnStatus(false));
+			this.myTurnStatus.setVisible(false);
+
+			callback(true);
+			this.emitGetHand();
 		});
 	}
 	/* END-USER-CODE */

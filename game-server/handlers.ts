@@ -81,7 +81,7 @@ export class GameHandlers {
         this.emitTeamSelection = this.emitTeamSelection.bind(this);
         this.emitGameStart = this.emitGameStart.bind(this);
         this.findWinningCard = this.findWinningCard.bind(this);
-        
+        this.gameOverHandler = this.gameOverHandler.bind(this);
     }
 
     ////////////////// REST handler //////////////////
@@ -130,6 +130,50 @@ export class GameHandlers {
             } else {
                 response.status(400).json({ error: "Invalid request" });
             }
+        };
+    }
+
+
+
+    gameOverHandler(io: Server<events.ClientEvents, events.ServerEvents>): RequestHandler {
+        return (request: Request, response: Response) => {
+            // parse reset flag in query
+            const reset = request.query.reset === "true";
+
+            console.log("game-over handler",);
+
+            this.gameStarted = false;
+            this.round = 0;
+            this.completedTurns = 0;
+            this.cardsPlayed = [];
+            this.nextPlayer = undefined;
+            this.team1Score = 0;
+            this.team2Score = 0;
+            this.trumpSuit = undefined;
+            this.lastEmittedTurn = undefined;
+
+            if (reset) {
+                this.playerById = new Map<string, Player>();
+                this.players = [];
+                this.idempotencyKeys = new Set<string>();
+
+            }
+            
+            this.shuffleAndDealCards();
+
+            // emit game over event
+            io.timeout(EMIT_TIMEOUT).emit("game-over", reset, (err, over) => {
+                if (err) {
+                    console.log("game-over some clients didn't acknowledge");
+                }
+                console.log("game-over event acknowledged");
+            });
+
+            // // add delay starting game again
+            // setTimeout(() => {
+            //     this.startGame(io);
+            // }, 3000);
+            response.status(200).send("Game Over");
         };
     }
 
@@ -464,35 +508,6 @@ export class GameHandlers {
                 console.log("new-turn event acknowledged");
             });
         }
-    }
-
-    gameOverHandler(io: Server<events.ClientEvents, events.ServerEvents>) {
-        console.log("game-over handler");
-       
-        this.gameStarted = false;
-        this.round = 0;
-        this.completedTurns = 0;
-        this.cardsPlayed = [];
-        this.nextPlayer = undefined;
-        this.team1Score = 0;
-        this.team2Score = 0;
-        this.trumpSuit = undefined;
-        this.lastEmittedTurn = undefined;
-        
-        this.shuffleAndDealCards();
-
-        // emit game over event
-        io.timeout(EMIT_TIMEOUT).emit("game-over", true, (err, over) => {
-            if (err) {
-                console.log("game-over some clients didn't acknowledge");
-            }
-            console.log("game-over event acknowledged");
-        });
-
-        // // add delay starting game again
-        // setTimeout(() => {
-        //     this.startGame(io);
-        // }, 3000);
     }
 
     shuffleAndDealCards() {

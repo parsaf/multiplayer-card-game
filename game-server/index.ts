@@ -17,10 +17,7 @@ const handlers = new GameHandlers();
 // joining the party
 app.get("/api/join", handlers.getPlayerJoinHandler(io));
 app.get("/api/start", handlers.getStartTurnsHandler(io));
-app.get("/api/game-over", (request: Request, response: Response) => {
-    handlers.gameOverHandler(io);
-    response.status(200).send("Game Over");
-});
+app.get("/api/game-over", handlers.gameOverHandler(io));
 
 io.on("connection", (socket) => {
     handlers.reconnectionHandler(socket);
