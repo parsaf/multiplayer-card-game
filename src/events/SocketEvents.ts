@@ -9,6 +9,7 @@ export interface ServerEvents {
 	"new-turn": (payload: NewTurnPayload, callback: (recieved: boolean) => void) => void;
 	"team-selection": (payload: TeamSelectionPayload) => void;
 	"game-start": (gameStart: boolean, callback: (start: boolean) => void) => void;
+	"game-over": (gameOver: boolean, callback: (over: boolean) => void) => void;
 	// "new-round": (payload: NewRoundPayload, callback: () => void) => void;
 }
 

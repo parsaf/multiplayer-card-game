@@ -1,5 +1,5 @@
 import dotenv from "dotenv";
-import express from "express";
+import express, { Request, Response } from "express";
 import http from "http";
 import { Server } from "socket.io";
 import { GameHandlers } from "./handlers";
@@ -17,7 +17,10 @@ const handlers = new GameHandlers();
 // joining the party
 app.get("/api/join", handlers.getPlayerJoinHandler(io));
 app.get("/api/start", handlers.getStartTurnsHandler(io));
-
+app.get("/api/game-over", (request: Request, response: Response) => {
+    handlers.gameOverHandler(io);
+    response.status(200).send("Game Over");
+});
 
 io.on("connection", (socket) => {
     handlers.reconnectionHandler(socket);

@@ -276,37 +276,6 @@ export class GameHandlers {
             };
         });
 
-        //     {
-        //         name: "Parsa",
-        //         team: "TEAM_1",
-        //         order: 1,
-        //     },
-        //     {
-        //         name: "Behnood",
-        //         team: "TEAM_2",
-        //         order: 2,
-        //     },
-        //     {
-        //         name: "Baba",
-        //         team: "TEAM_1",
-        //         order: 3,
-        //     },
-        //     {
-        //         name: "Maman",
-        //         team: "TEAM_2",
-        //         order: 4,
-        //     },
-        //     {
-        //         name: "Anita",
-        //         team: "TEAM_1",
-        //         order: 5,
-        //     },
-        //     {
-        //         name: "Arshia",
-        //         team: "TEAM_2",
-        //         order: 6,
-        //     },
-        // ];
         const response: events.DealHandResponse = {
             hand: player.hand,
             playerDetails: playerDetails,
@@ -396,17 +365,7 @@ export class GameHandlers {
             }
         }
 
-        // deck of 54 cards (with 2 jokers)
-        const deck = Array.from(Array(53).keys());
-        shuffle(deck);
-        console.log("shuffled deck", deck);
-
-        // deal hand
-        for (const [id, player] of this.playerById) {
-            player.hand = deck.slice(0, 9);
-            deck.splice(0, 9);
-            // emitDealHand(player);
-        }
+        this.shuffleAndDealCards();
 
         this.emitGameStart(io);
     }
@@ -505,6 +464,49 @@ export class GameHandlers {
                 console.log("new-turn event acknowledged");
             });
         }
+    }
+
+    gameOverHandler(io: Server<events.ClientEvents, events.ServerEvents>) {
+        console.log("game-over handler");
+       
+        this.gameStarted = false;
+        this.round = 0;
+        this.completedTurns = 0;
+        this.cardsPlayed = [];
+        this.nextPlayer = undefined;
+        this.team1Score = 0;
+        this.team2Score = 0;
+        this.trumpSuit = undefined;
+        this.lastEmittedTurn = undefined;
+        
+        this.shuffleAndDealCards();
+
+        // emit game over event
+        io.timeout(EMIT_TIMEOUT).emit("game-over", true, (err, over) => {
+            if (err) {
+                console.log("game-over some clients didn't acknowledge");
+            }
+            console.log("game-over event acknowledged");
+        });
+
+        // // add delay starting game again
+        // setTimeout(() => {
+        //     this.startGame(io);
+        // }, 3000);
+    }
+
+    shuffleAndDealCards() {
+        // deck of 54 cards (with 2 jokers)
+        const deck = Array.from(Array(53).keys());
+        shuffle(deck);
+        console.log("shuffled deck", deck);
+
+        // deal hand
+        for (const [id, player] of this.playerById) {
+            player.hand = deck.slice(0, 9);
+            deck.splice(0, 9);
+        }
+       
     }
 }
 

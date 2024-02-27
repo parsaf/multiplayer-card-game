@@ -120,7 +120,6 @@ export default class Level extends Phaser.Scene {
 	private team2Score: number = 0;
 	private round: number = 1;
 	private completedTurns: number = 0;
-	private nextPlayer: number = 1;
 
 	init(data: {
 		playerId: string,
@@ -147,6 +146,7 @@ export default class Level extends Phaser.Scene {
 		this.input.on("dragend", this.dragEndHandler, this);
 		this.emitGetHand();
 		this.newTurnListener();
+		this.gameOverListener();
 	}
 
 	dealPlayerHand(handVals: number[]) {
@@ -438,6 +438,22 @@ export default class Level extends Phaser.Scene {
 			}
 			this.dealPlayerHand(res.hand);
 			this.setPlayerNames(res.playerOrder, res.playerDetails);
+		});
+	}
+
+	gameOverListener() {
+		this.socket.on("game-over", (start, callback) => {
+			console.log("game start received", start);
+			if (start) {
+				this.cardPile.clear(true);
+				this.playerHand.clear(true);
+				this.team1Score = 0;
+				this.team2Score = 0;
+				this.round = 0;
+				this.completedTurns = 0;
+				callback(true);
+				this.emitGetHand();
+			}
 		});
 	}
 	/* END-USER-CODE */
