@@ -35,7 +35,7 @@ export enum Suit {
 
 
 // constants
-const MAX_PLAYER_COUNT = 2; // TODO: change this to 6
+const MAX_PLAYER_COUNT = 6; // TODO: change this to 6
 const EMIT_TIMEOUT = 1000;
 const ROUNDS_PER_GAME = 9;
 const SUIT_ORDERING = [Suit.DIAMOND, Suit.SPADE, Suit.HEART, Suit.CLUB]
