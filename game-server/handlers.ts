@@ -512,7 +512,7 @@ export class GameHandlers {
 
     shuffleAndDealCards() {
         // deck of 54 cards (with 2 jokers)
-        const deck = Array.from(Array(53).keys());
+        const deck = Array.from(Array(54).keys());
         shuffle(deck);
         console.log("shuffled deck", deck);
 
