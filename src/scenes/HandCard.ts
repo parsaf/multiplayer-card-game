@@ -7,8 +7,8 @@ import Phaser from "phaser";
 /* START-USER-IMPORTS */
 
 
-export const CARD_HEIGHT = 94;
-export const CARD_WIDTH = 71;
+export const CARD_HEIGHT = 113;
+export const CARD_WIDTH = 75;
 
 export enum Suit {
     DIAMOND = 'Diamond',
@@ -20,6 +20,14 @@ export enum Suit {
 }
 
 const suitOrdering = [Suit.DIAMOND, Suit.SPADES, Suit.HEARTS, Suit.CLUBS]
+const suitFrameOffset : Record<Suit, number> = {
+	[Suit.CLUBS]: 1,
+	[Suit.SPADES]: 15,
+	[Suit.HEARTS]: 29,
+	[Suit.DIAMOND]: 43,
+	[Suit.JOKER_BLACK]: 13,
+	[Suit.JOKER_RED]: 26,
+};
 
 
 /* END-USER-IMPORTS */
@@ -42,24 +50,30 @@ export default class HandCard extends Phaser.GameObjects.Image {
 	value: number;
 
 	assignValue(value: number) {
-		let frame: string;
-		if (0 <= value && value < 52) {
+		let frame: number;
+		if (value == 52) {
+			this.suit =  Suit.JOKER_BLACK;
+			this.faceValue = 0;
+			frame = suitFrameOffset[this.suit];
+		}
+		else if (value == 53) {
+			this.suit =  Suit.JOKER_RED;
+			this.faceValue = 0;
+			frame = suitFrameOffset[this.suit];
+		}
+		else if (0 <= value && value < 52) {
 			this.suit = suitOrdering[Math.floor(value / 13)];
 			this.faceValue = (value % 13) + 2; // 2,...,10,J,Q,K,A
-			const prefix = this.faceValue == 14 ? 1 : this.faceValue;
-			frame = this.suit + " " + prefix.toString() + ".png";
-		}
-		else if (value == 52 || value == 53 ) {
-			this.suit = value == 52 ? Suit.JOKER_BLACK : Suit.JOKER_RED;
-			this.faceValue = 0;
-			frame = this.suit + ".png";
+			frame = suitFrameOffset[this.suit] + this.faceValue - 2;
 		}
 		else {
 			throw new Error('Card value out of range');
 		}
 		this.value = value;
 
-		this.setTexture("sprite", frame);
+		console.log(`Card value: ${value}, suit: ${this.suit}, faceValue: ${this.faceValue}, frame: ${frame}`);
+
+		this.setTexture("new-deck-sprite", frame);
 	}
 
 	static cmpr(a: HandCard, b: HandCard): number {

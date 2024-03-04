@@ -22,6 +22,19 @@
                 "key": "FufuSuperDino"
             },
             {
+                "url": "assets/new-deck-sprite.png",
+                "frameConfig": {
+                    "frameWidth": 75,
+                    "frameHeight": 113,
+                    "startFrame": 0,
+                    "endFrame": -1,
+                    "spacing": 15,
+                    "margin": 0
+                },
+                "type": "spritesheet",
+                "key": "new-deck-sprite"
+            },
+            {
                 "type": "multiatlas",
                 "url": "assets/sprite.json",
                 "path": "assets",

@@ -15,11 +15,8 @@ import HandCard, { CARD_HEIGHT, CARD_WIDTH } from "./HandCard";
 import type * as Events from "../events/SocketEvents";
 import RexUIPlugin from 'phaser3-rex-plugins/templates/ui/ui-plugin.js';
 import { io, Socket } from "socket.io-client";
-import qs from "qs";
-import fetchBuilder from "fetch-retry";
 import { v4 as uuidv4 } from "uuid";
 
-const fetchRetry = fetchBuilder(fetch);
 type OtherPlayer = RedPlayer | BluePlayer;
 /* END-USER-IMPORTS */
 
@@ -40,23 +37,23 @@ export default class Level extends Phaser.Scene {
 		carpet.scaleY = 1.15;
 
 		// opponent_2
-		const opponent_2 = new RedPlayer(this, 305, 10);
+		const opponent_2 = new RedPlayer(this, 360, 50);
 		this.add.existing(opponent_2);
 
 		// team_mate_1
-		const team_mate_1 = new BluePlayer(this, 10, 10);
+		const team_mate_1 = new BluePlayer(this, 90, 50);
 		this.add.existing(team_mate_1);
 
 		// team_mate_2
-		const team_mate_2 = new BluePlayer(this, 600, 10);
+		const team_mate_2 = new BluePlayer(this, 630, 50);
 		this.add.existing(team_mate_2);
 
 		// opponent_1
-		const opponent_1 = new RedPlayer(this, 10, 592);
+		const opponent_1 = new RedPlayer(this, 90, 592);
 		this.add.existing(opponent_1);
 
 		// opponent_3
-		const opponent_3 = new RedPlayer(this, 600, 592);
+		const opponent_3 = new RedPlayer(this, 630, 592);
 		this.add.existing(opponent_3);
 
 		// dropZone
@@ -65,14 +62,14 @@ export default class Level extends Phaser.Scene {
 
 		// theirScore
 		const theirScore = this.add.text(710, 853, "", {});
-		theirScore.setOrigin(0.999526529059053, 0.000654663140794722);
+		theirScore.setOrigin(1, 0);
 		theirScore.text = "Them: 0";
-		theirScore.setStyle({ "backgroundColor": "#ff0000ff", "fontSize": "22px", "stroke": "#000000ff", "strokeThickness":4});
+		theirScore.setStyle({ "backgroundColor": "#ff0000ff", "fontSize": "35px", "stroke": "#000000ff", "strokeThickness":4});
 
 		// ourScore
 		const ourScore = this.add.text(10, 853, "", {});
 		ourScore.text = "Us: 0";
-		ourScore.setStyle({ "backgroundColor": "#00ccffff", "fontSize": "22px", "stroke": "#000000ff", "strokeThickness":4});
+		ourScore.setStyle({ "backgroundColor": "#00ccffff", "fontSize": "35px", "stroke": "#000000ff", "strokeThickness":4});
 
 		// myTurnStatus
 		const myTurnStatus = this.add.rectangle(360, 1214, 714, 128);

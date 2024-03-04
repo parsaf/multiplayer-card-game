@@ -16,48 +16,18 @@
             "type": "Container",
             "id": "c1d335ac-a658-4b5b-a977-cce96f1d2e5b",
             "label": "opponent_2",
+            "x": -8,
             "list": [
-                {
-                    "type": "Image",
-                    "id": "4e623665-e4bb-4746-9498-d3acd39a640b",
-                    "label": "back_Red_1_png",
-                    "texture": {
-                        "key": "sprite",
-                        "frame": "Back Red 1.png"
-                    },
-                    "x": 72.52940632697565,
-                    "y": 46.956400497205216
-                },
-                {
-                    "type": "Image",
-                    "id": "ac97a632-162c-423a-ab1f-a5437252dc5d",
-                    "label": "back_Red_1_png_2",
-                    "texture": {
-                        "key": "sprite",
-                        "frame": "Back Red 1.png"
-                    },
-                    "x": 53.529406326975646,
-                    "y": 46.956400497205216
-                },
-                {
-                    "type": "Image",
-                    "id": "8fc535d9-5e3b-4896-b3cf-de3f386b4a12",
-                    "label": "back_Red_1_png_1",
-                    "texture": {
-                        "key": "sprite",
-                        "frame": "Back Red 1.png"
-                    },
-                    "x": 35.529406326975646,
-                    "y": 47.956400497205216
-                },
                 {
                     "type": "Text",
                     "id": "59450384-847c-4cfd-9e21-4424904f29c0",
                     "label": "text_1",
                     "scope": "CLASS",
-                    "y": 96,
+                    "y": 70,
+                    "originX": 0.5,
+                    "originY": 0.5,
                     "text": "opponent",
-                    "fontSize": "22px",
+                    "fontSize": "35px",
                     "stroke": "#000000ff",
                     "strokeThickness": 4,
                     "backgroundColor": "#ff0000ff"
@@ -67,14 +37,54 @@
                     "id": "81a7cdb8-b2ce-4d8c-8a6f-70739cf75753",
                     "label": "turnStatus",
                     "scope": "CLASS",
-                    "x": 63,
-                    "y": 63,
+                    "y": 20,
                     "visible": false,
                     "strokeColor": "#08ff2e",
                     "lineWidth": 6,
                     "isStroked": true,
-                    "width": 128,
-                    "height": 128
+                    "width": 170,
+                    "height": 140
+                },
+                {
+                    "type": "Container",
+                    "id": "88892ee2-fafe-461e-b3c6-f156482b3857",
+                    "label": "container_1",
+                    "allowPickChildren": false,
+                    "list": [
+                        {
+                            "type": "Image",
+                            "id": "4e623665-e4bb-4746-9498-d3acd39a640b",
+                            "label": "back_Red_1_png",
+                            "texture": {
+                                "key": "sprite",
+                                "frame": "Back Red 1.png"
+                            },
+                            "x": 19.501117889528405,
+                            "y": 0.6581203455829897
+                        },
+                        {
+                            "type": "Image",
+                            "id": "ac97a632-162c-423a-ab1f-a5437252dc5d",
+                            "label": "back_Red_1_png_2",
+                            "texture": {
+                                "key": "sprite",
+                                "frame": "Back Red 1.png"
+                            },
+                            "x": -0.49888211047159414,
+                            "y": -0.3418796544170104
+                        },
+                        {
+                            "type": "Image",
+                            "id": "8fc535d9-5e3b-4896-b3cf-de3f386b4a12",
+                            "label": "back_Red_1_png_1",
+                            "texture": {
+                                "key": "sprite",
+                                "frame": "Back Red 1.png"
+                            },
+                            "x": -16.498882110471595,
+                            "y": -0.3418796544170104
+                        }
+                    ]
                 }
             ]
         }

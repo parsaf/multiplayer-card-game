@@ -18,46 +18,15 @@
             "label": "team_mate_1",
             "list": [
                 {
-                    "type": "Image",
-                    "id": "8f82c563-cb5d-479c-a088-05ab7a43db80",
-                    "label": "back_Blue_1_png_4",
-                    "texture": {
-                        "key": "sprite",
-                        "frame": "Back Blue 1.png"
-                    },
-                    "x": 72.51235364355163,
-                    "y": 47.07857127616366
-                },
-                {
-                    "type": "Image",
-                    "id": "75d7401a-ac5c-4fd4-b054-7fcf8f458566",
-                    "label": "back_Blue_1_png_5",
-                    "texture": {
-                        "key": "sprite",
-                        "frame": "Back Blue 1.png"
-                    },
-                    "x": 54.4612862912567,
-                    "y": 46.96437449881991
-                },
-                {
-                    "type": "Image",
-                    "id": "66b18090-070c-49df-9178-d7e24031b7d8",
-                    "label": "back_Blue_1_png_6",
-                    "texture": {
-                        "key": "sprite",
-                        "frame": "Back Blue 1.png"
-                    },
-                    "x": 35.512352689877304,
-                    "y": 48.07857127616366
-                },
-                {
                     "type": "Text",
                     "id": "cc24a796-6d1e-46ce-a5e4-b06b8422f09c",
                     "label": "text_1",
                     "scope": "CLASS",
-                    "y": 96,
+                    "y": 70,
+                    "originX": 0.5,
+                    "originY": 0.5,
                     "text": "friend",
-                    "fontSize": "22px",
+                    "fontSize": "35px",
                     "stroke": "#000000ff",
                     "strokeThickness": 4,
                     "backgroundColor": "#00ccffff"
@@ -67,14 +36,53 @@
                     "id": "82cf1b1d-8035-44fb-89f1-daafa2667921",
                     "label": "turnStatus",
                     "scope": "CLASS",
-                    "x": 60,
-                    "y": 63,
+                    "y": 20,
                     "visible": false,
                     "strokeColor": "#08ff2e",
                     "lineWidth": 6,
                     "isStroked": true,
-                    "width": 128,
-                    "height": 128
+                    "width": 170,
+                    "height": 140
+                },
+                {
+                    "type": "Container",
+                    "id": "518c02ed-97bc-459f-82b8-598446ef2687",
+                    "label": "container_1",
+                    "list": [
+                        {
+                            "type": "Image",
+                            "id": "8f82c563-cb5d-479c-a088-05ab7a43db80",
+                            "label": "back_Blue_1_png_4",
+                            "texture": {
+                                "key": "sprite",
+                                "frame": "Back Blue 1.png"
+                            },
+                            "x": 17.861654318361616,
+                            "y": -0.36426186469720534
+                        },
+                        {
+                            "type": "Image",
+                            "id": "75d7401a-ac5c-4fd4-b054-7fcf8f458566",
+                            "label": "back_Blue_1_png_5",
+                            "texture": {
+                                "key": "sprite",
+                                "frame": "Back Blue 1.png"
+                            },
+                            "x": -0.189413033933306,
+                            "y": -0.47845864204095534
+                        },
+                        {
+                            "type": "Image",
+                            "id": "66b18090-070c-49df-9178-d7e24031b7d8",
+                            "label": "back_Blue_1_png_6",
+                            "texture": {
+                                "key": "sprite",
+                                "frame": "Back Blue 1.png"
+                            },
+                            "x": -19.138345681638384,
+                            "y": 0.6357381353027947
+                        }
+                    ]
                 }
             ]
         }
