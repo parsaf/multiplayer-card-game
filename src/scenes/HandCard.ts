@@ -25,8 +25,8 @@ const suitFrameOffset : Record<Suit, number> = {
 	[Suit.SPADES]: 15,
 	[Suit.HEARTS]: 29,
 	[Suit.DIAMOND]: 43,
-	[Suit.JOKER_BLACK]: 13,
-	[Suit.JOKER_RED]: 26,
+	[Suit.JOKER_BLACK]: 14,
+	[Suit.JOKER_RED]: 28,
 };
 
 

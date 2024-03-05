@@ -121,7 +121,8 @@ export class GameHandlers {
                 this.trumpSuit = trump as Suit;
             }
             if (starterPlayerId && this.playerById.has(starterPlayerId.toString()) && this.trumpSuit) {
-                response.status(200).json({ message: "Game started" });
+                // redirect client to admin page
+                response.redirect('/admin');
                 // start turn 1
                 this.round = 1;
                 this.nextPlayer = this.playerById.get(starterPlayerId.toString())!;
@@ -169,11 +170,8 @@ export class GameHandlers {
                 console.log("game-over event acknowledged");
             });
 
-            // // add delay starting game again
-            // setTimeout(() => {
-            //     this.startGame(io);
-            // }, 3000);
-            response.status(200).send("Game Over");
+            // redirect client to admin page
+            response.redirect('/admin');
         };
     }
 
@@ -552,7 +550,7 @@ export function NewCard(card: number): Card {
             faceValue: faceValue,
             suit: suit,
         };
-    }
+}
 
 export function NewCardPlayed(card: number, player: Player): CardPlayed {
     return {
@@ -589,6 +587,4 @@ function isCardBeaten(card1: CardPlayed, card2: CardPlayed, trumpSuit: Suit): bo
 
     // otherwise the higher card of the same suit wins
     return card1.card.suit === card2.card.suit && card2.card.faceValue > card1.card.faceValue;
-
-
 }

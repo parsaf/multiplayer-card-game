@@ -1,0 +1,29 @@
+html
+  head
+    title='Admin'
+    <link rel="icon" href="/assets/favicon.ico">
+  body
+    h1 Lorans Admin
+    case gameStart
+        when false
+            form(name="start" action="/api/start" method="get" style={display: 'flex'})
+                div(style={display: 'flex', 'flex-direction': 'column', margin: '4px'})
+                    label(for="starterPlayerId" style={margin: '2px'}) Starter Player
+                    select(name="starterPlayerId")
+                        each player in players
+                            option(value=player.id)= player.name
+                div(style={display: 'flex', 'flex-direction': 'column', margin: '4px'})
+                    label(for="trump") Trump Suit
+                    select(name="trump")
+                        option(value="heart") Hearts ❤️
+                        option(value="diamond") Diamonds ♦️
+                        option(value="club") Clubs ♣️
+                        option(value="spade") Spades ♠️
+                button(type="submit" style={margin: '8px'}) Submit
+        
+        default
+            form(name="restart" action="/api/game-over" method="get")
+                select(name="reset")
+                    option(value="true") New Game
+                    option(value="false") Next Round
+                button(type="submit") Submit
