@@ -38,58 +38,58 @@ export default class Lobby extends Phaser.Scene {
 		carpet.scaleY = 1.15;
 
 		// team_1
-		const team_1 = this.add.text(360, 221, "", {});
+		const team_1 = this.add.text(360, 201, "", {});
 		team_1.setOrigin(0.5, 0.5);
 		team_1.text = "Team 1";
-		team_1.setStyle({ "backgroundColor": "#ff0035ff", "fontSize": "40px" });
+		team_1.setStyle({ "backgroundColor": "#ff0035ff", "fontSize": "50px" });
 
 		// team_2
-		const team_2 = this.add.text(360, 780, "", {});
+		const team_2 = this.add.text(360, 762, "", {});
 		team_2.setOrigin(0.5, 0.5);
 		team_2.text = "Team 2";
-		team_2.setStyle({ "backgroundColor": "#ff0035ff", "fontSize": "40px" });
+		team_2.setStyle({ "backgroundColor": "#ff0035ff", "fontSize": "50px" });
 
 		// player1_1
-		const player1_1 = this.add.text(360, 261, "", {});
+		const player1_1 = this.add.text(359.5, 261, "", {});
 		player1_1.setOrigin(0.5, 0.5);
 		player1_1.visible = false;
 		player1_1.text = "player 1";
-		player1_1.setStyle({ "backgroundColor": "#00ccffff", "fontSize": "28px" });
+		player1_1.setStyle({ "backgroundColor": "#00ccffff", "fontSize": "35px" });
 
 		// player1_2
-		const player1_2 = this.add.text(360, 302, "", {});
+		const player1_2 = this.add.text(359.5, 311.93994140625, "", {});
 		player1_2.setOrigin(0.5, 0.5);
 		player1_2.visible = false;
 		player1_2.text = "player 2";
-		player1_2.setStyle({ "backgroundColor": "#00ccffff", "fontSize": "28px" });
+		player1_2.setStyle({ "backgroundColor": "#00ccffff", "fontSize": "35px" });
 
 		// player1_3
-		const player1_3 = this.add.text(360, 341, "", {});
+		const player1_3 = this.add.text(359.5, 362, "", {});
 		player1_3.setOrigin(0.5, 0.5);
 		player1_3.visible = false;
 		player1_3.text = "player 3";
-		player1_3.setStyle({ "backgroundColor": "#00ccffff", "fontSize": "28px" });
+		player1_3.setStyle({ "backgroundColor": "#00ccffff", "fontSize": "35px" });
 
 		// player2_1
 		const player2_1 = this.add.text(360, 822, "", {});
 		player2_1.setOrigin(0.5, 0.5);
 		player2_1.visible = false;
 		player2_1.text = "player 1";
-		player2_1.setStyle({ "backgroundColor": "#00ccffff", "fontSize": "28px" });
+		player2_1.setStyle({ "backgroundColor": "#00ccffff", "fontSize": "35px" });
 
 		// player2_2
-		const player2_2 = this.add.text(360, 860, "", {});
+		const player2_2 = this.add.text(360, 872, "", {});
 		player2_2.setOrigin(0.5, 0.5);
 		player2_2.visible = false;
 		player2_2.text = "player 2";
-		player2_2.setStyle({ "backgroundColor": "#00ccffff", "fontSize": "28px" });
+		player2_2.setStyle({ "backgroundColor": "#00ccffff", "fontSize": "35px" });
 
 		// player2_3
-		const player2_3 = this.add.text(360, 898, "", {});
+		const player2_3 = this.add.text(360, 923, "", {});
 		player2_3.setOrigin(0.5, 0.5);
 		player2_3.visible = false;
 		player2_3.text = "player 3";
-		player2_3.setStyle({ "backgroundColor": "#00ccffff", "fontSize": "28px" });
+		player2_3.setStyle({ "backgroundColor": "#00ccffff", "fontSize": "35px" });
 
 		// team_switch
 		const team_switch = this.add.image(282, 610, "up-down");
@@ -98,46 +98,46 @@ export default class Lobby extends Phaser.Scene {
 		team_switch.visible = false;
 
 		// player1_4
-		const player1_4 = this.add.text(359, 381, "", {});
+		const player1_4 = this.add.text(359, 413, "", {});
 		player1_4.setOrigin(0.5, 0.5);
 		player1_4.visible = false;
 		player1_4.text = "player 4";
-		player1_4.setStyle({ "backgroundColor": "#00ccffff", "fontSize": "28px" });
+		player1_4.setStyle({ "backgroundColor": "#00ccffff", "fontSize": "35px" });
 
 		// player1_5
-		const player1_5 = this.add.text(359, 420, "", {});
+		const player1_5 = this.add.text(359, 464, "", {});
 		player1_5.setOrigin(0.5, 0.5);
 		player1_5.visible = false;
 		player1_5.text = "player 5";
-		player1_5.setStyle({ "backgroundColor": "#00ccffff", "fontSize": "28px" });
+		player1_5.setStyle({ "backgroundColor": "#00ccffff", "fontSize": "35px" });
 
 		// player1_6
-		const player1_6 = this.add.text(359, 460, "", {});
+		const player1_6 = this.add.text(359, 515, "", {});
 		player1_6.setOrigin(0.5, 0.5);
 		player1_6.visible = false;
 		player1_6.text = "player 6";
-		player1_6.setStyle({ "backgroundColor": "#00ccffff", "fontSize": "28px" });
+		player1_6.setStyle({ "backgroundColor": "#00ccffff", "fontSize": "35px" });
 
 		// player2_4
-		const player2_4 = this.add.text(360, 940, "", {});
+		const player2_4 = this.add.text(360, 984, "", {});
 		player2_4.setOrigin(0.5, 0.5);
 		player2_4.visible = false;
 		player2_4.text = "player 4";
-		player2_4.setStyle({ "backgroundColor": "#00ccffff", "fontSize": "28px" });
+		player2_4.setStyle({ "backgroundColor": "#00ccffff", "fontSize": "35px" });
 
 		// player2_5
-		const player2_5 = this.add.text(360, 979, "", {});
+		const player2_5 = this.add.text(360, 1034, "", {});
 		player2_5.setOrigin(0.5, 0.5);
 		player2_5.visible = false;
 		player2_5.text = "player 5";
-		player2_5.setStyle({ "backgroundColor": "#00ccffff", "fontSize": "28px" });
+		player2_5.setStyle({ "backgroundColor": "#00ccffff", "fontSize": "35px" });
 
 		// player2_6
-		const player2_6 = this.add.text(361, 1019, "", {});
+		const player2_6 = this.add.text(360, 1075, "", {});
 		player2_6.setOrigin(0.5, 0.5);
 		player2_6.visible = false;
 		player2_6.text = "player 6";
-		player2_6.setStyle({ "backgroundColor": "#00ccffff", "fontSize": "28px" });
+		player2_6.setStyle({ "backgroundColor": "#00ccffff", "fontSize": "35px" });
 
 		// playerReadyState
 		const playerReadyState = new PlayerReadyPrefab(this, 452, 610);
@@ -234,26 +234,36 @@ export default class Lobby extends Phaser.Scene {
 			this.team_switch.setVisible(true);
 			this.playerReadyState.setVisible(true);
 			this.playerReadyState.setReady(false);
-			// tell server player is ready
-			// this.socket.emit("ready", { playerId: this.playerId }, (err) => {
-			// 	console.log("ready emitted");
-			// 	if (err) {
-			// 		console.error(err);
-			// 		throw Error(err.error);
-			// 	}
-			// });
-		});
+		})
 	}
 
-	setTeams(team1: string[], team2: string[]) {
+	setTeams(team1: Events.PlayerDetails[], team2: Events.PlayerDetails[]) {
 		console.log("setting teams", team1, team2);
 		this.team1Objects.forEach((obj, i) => {
-			obj.setText(team1[i]);
-			obj.setVisible(!!team1[i]);
+			if (!team1[i]) {
+				obj.setVisible(false);
+				return;
+			}
+			let name = team1[i].name;
+			if (team1[i].playerId === this.playerId) {
+				name = '>>> ' + name + ' <<<';
+				this.myTeam = team1[i].team;
+			}
+			obj.setText(name);
+			obj.setVisible(true);
 		});
 		this.team2Objects.forEach((obj, i) => {
-			obj.setText(team2[i]);
-			obj.setVisible(!!team2[i]);
+			if (!team2[i]) {
+				obj.setVisible(false);
+				return;
+			}
+			let name = team2[i].name;
+			if (team2[i].playerId === this.playerId) {
+				name = '>>> ' + name + ' <<<';
+				this.myTeam = team2[i].team;
+			}
+			obj.setText(name);
+			obj.setVisible(true);
 		});
 	}
 
@@ -267,7 +277,7 @@ export default class Lobby extends Phaser.Scene {
 				console.log("updating teams", team1, team2);
 				this.team1Names = team1;
 				this.team2Names = team2;
-				this.setTeams(team1, team2);
+				this.setTeams(payload.team1, payload.team2);
 			}
 		});
 	}

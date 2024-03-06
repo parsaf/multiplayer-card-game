@@ -11,7 +11,6 @@ app.set('views', './views');
 app.set('view engine', 'pug');
 const server = http.createServer(app);
 const PORT = process.env.PORT;
-const FRONTEND_URL = process.env.FRONTEND_URL;
 const io: Server<events.ClientEvents, events.ServerEvents> = new Server(server);
 const handlers = new GameHandlers();
 
@@ -20,6 +19,7 @@ const handlers = new GameHandlers();
 app.get("/api/join", handlers.getPlayerJoinHandler(io));
 app.get("/api/start", handlers.getStartTurnsHandler(io));
 app.get("/api/game-over", handlers.gameOverHandler(io));
+app.get("/api/push", handlers.pushHandler(io));
 
 app.get('/admin', (req, res) => {
     res.render('admin', { players: handlers.players, gameStart: handlers.gameStarted })

@@ -37,7 +37,7 @@ export enum Suit {
 // constants
 const MAX_PLAYER_COUNT = 6;
 const MIN_PLAYER_COUNT = 2;
-const EMIT_TIMEOUT = 1000;
+const EMIT_TIMEOUT = 3000;
 const ROUNDS_PER_GAME = 9;
 const SUIT_ORDERING = [Suit.DIAMOND, Suit.SPADE, Suit.HEART, Suit.CLUB]
 
@@ -180,6 +180,23 @@ export class GameHandlers {
             // redirect client to admin page
             response.redirect('/admin');
         };
+    }
+
+    pushHandler(io: Server<events.ClientEvents, events.ServerEvents>): RequestHandler {
+        return (request: Request, response: Response) => {
+            console.log("push handler");
+            console.log("(re)connection handler");
+            if (this.gameStarted && this.lastEmittedTurn) {
+                // emit last turn
+                io.timeout(EMIT_TIMEOUT).emit("new-turn", this.lastEmittedTurn, (err, received) => {
+                    if (err) {
+                        console.log("new-turn reconnected client didn't acknowledge");
+                    }
+                    console.log("new-turn event acknowledged");
+                });
+            }
+            response.redirect('/admin');
+        }
     }
 
     ////////////////// event handlers //////////////////
