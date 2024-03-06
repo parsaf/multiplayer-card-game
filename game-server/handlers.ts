@@ -35,7 +35,8 @@ export enum Suit {
 
 
 // constants
-const MAX_PLAYER_COUNT = 6; // TODO: change this to 6
+const MAX_PLAYER_COUNT = 6;
+const MIN_PLAYER_COUNT = 2;
 const EMIT_TIMEOUT = 1000;
 const ROUNDS_PER_GAME = 9;
 const SUIT_ORDERING = [Suit.DIAMOND, Suit.SPADE, Suit.HEART, Suit.CLUB]
@@ -54,6 +55,7 @@ export class GameHandlers {
     idempotencyKeys: Set<string>;
     trumpSuit?: Suit;
     lastEmittedTurn?: events.NewTurnPayload;
+    playerCount: number;
 
     // class constructor
     constructor() {
@@ -66,6 +68,7 @@ export class GameHandlers {
         this.team1Score = 0;
         this.team2Score = 0;
         this.idempotencyKeys = new Set<string>();
+        this.playerCount = MAX_PLAYER_COUNT;
 
         this.getHandHandler = this.getHandHandler.bind(this);
         this.playerReadyHandler = this.playerReadyHandler.bind(this);
@@ -90,7 +93,7 @@ export class GameHandlers {
         return (request: Request, response: Response) => {
             console.log('join started', request.query);
             const { name } = request.query;
-            if (this.playerById.size < MAX_PLAYER_COUNT) {
+            if (this.playerById.size < this.playerCount) {
                 const playerId = randomUUID();
                 const playerOrder = this.players.length + 1;
                 const player: Player = {
@@ -140,6 +143,10 @@ export class GameHandlers {
         return (request: Request, response: Response) => {
             // parse reset flag in query
             const reset = request.query.reset === "true";
+
+            if (request.query.playerCount && reset) {
+                this.playerCount = Math.max(Math.min(parseInt(request.query.playerCount as string), MAX_PLAYER_COUNT), MIN_PLAYER_COUNT);
+            }
 
             console.log("game-over handler",);
 
@@ -206,8 +213,8 @@ export class GameHandlers {
             }
             player.ready = !player.ready;
             console.log("player set ready", player);
-            console.log("start conditions", this.players.length === MAX_PLAYER_COUNT, this.players.every((player) => player.ready), this.players.filter((player) => player.team === "TEAM_1").length === Math.floor(MAX_PLAYER_COUNT / 2));
-            if (this.players.length === MAX_PLAYER_COUNT && this.players.every((player) => player.ready) && this.players.filter((player) => player.team === "TEAM_1").length === Math.floor(MAX_PLAYER_COUNT / 2)) {
+            console.log("start conditions", this.players.length === this.playerCount, this.players.every((player) => player.ready), this.players.filter((player) => player.team === "TEAM_1").length === Math.floor(this.playerCount / 2));
+            if (this.players.length === this.playerCount && this.players.every((player) => player.ready) && this.players.filter((player) => player.team === "TEAM_1").length === Math.floor(this.playerCount / 2)) {
                 console.log("ready to start game");
                 this.startGame(io);
             }
@@ -415,7 +422,7 @@ export class GameHandlers {
     completeTurn(currentPlayer: Player, card: number, io: Server<events.ClientEvents, events.ServerEvents>) {
         this.cardsPlayed.push(NewCardPlayed(card, currentPlayer));
         this.completedTurns += 1;
-        this.nextPlayer = this.players.find((player) => player.order === (this.nextPlayer!.order % MAX_PLAYER_COUNT) + 1)!;
+        this.nextPlayer = this.players.find((player) => player.order === (this.nextPlayer!.order % this.playerCount) + 1)!;
         this.newTurn(io, currentPlayer, card);
     }
 
@@ -426,7 +433,7 @@ export class GameHandlers {
     ) {
         console.log('start new turn and broadcast last cards played: ', this.cardsPlayed);
         const payload: events.NewTurnPayload = {
-            nextPlayer: this.completedTurns === MAX_PLAYER_COUNT ? undefined : this.nextPlayer?.order,
+            nextPlayer: this.completedTurns === this.playerCount ? undefined : this.nextPlayer?.order,
             lastTurn: this.completedTurns,
             lastPlayer: lastPlayer?.order,
             round: this.round,
@@ -436,7 +443,7 @@ export class GameHandlers {
             gameOver: this.round === ROUNDS_PER_GAME ? true : false,
         };
         this.emitNewTurn(io, payload);
-        if (this.completedTurns === MAX_PLAYER_COUNT) {
+        if (this.completedTurns === this.playerCount) {
             this.completedTurns = 0;
             this.round += 1;
 
