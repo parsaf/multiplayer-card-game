@@ -31,7 +31,7 @@ describe('findWinningCard', () => {
     handlers.cardsPlayed = cardsPlayed;
     handlers.trumpSuit = Suit.HEART;
 
-    const winningCard = handlers.findWinningCard();
+    const winningCard = handlers.findWinningCard(cardsPlayed);
 
     assert.strictEqual(winningCard, cardsPlayed[2]);
   });
@@ -61,7 +61,7 @@ describe('findWinningCard', () => {
     handlers.cardsPlayed = cardsPlayed;
     handlers.trumpSuit = Suit.HEART;
 
-    const winningCard = handlers.findWinningCard();
+    const winningCard = handlers.findWinningCard(cardsPlayed);
 
     assert.strictEqual(winningCard, cardsPlayed[2]);
   });
@@ -87,7 +87,7 @@ describe('findWinningCard', () => {
     handlers.cardsPlayed = cardsPlayed;
     handlers.trumpSuit = Suit.HEART;
 
-    const winningCard = handlers.findWinningCard();
+    const winningCard = handlers.findWinningCard(cardsPlayed);
 
     assert.strictEqual(winningCard, cardsPlayed[0]);
   });
@@ -113,7 +113,7 @@ describe('findWinningCard', () => {
     handlers.cardsPlayed = cardsPlayed;
     handlers.trumpSuit = Suit.HEART;
 
-    const winningCard = handlers.findWinningCard();
+    const winningCard = handlers.findWinningCard(cardsPlayed);
 
     assert.strictEqual(winningCard, cardsPlayed[1]);
   });
@@ -139,7 +139,7 @@ describe('findWinningCard', () => {
     handlers.cardsPlayed = cardsPlayed;
     handlers.trumpSuit = Suit.SPADE;
 
-    const winningCard = handlers.findWinningCard();
+    const winningCard = handlers.findWinningCard(cardsPlayed);
 
     assert.strictEqual(winningCard, cardsPlayed[0]);
   });
