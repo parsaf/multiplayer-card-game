@@ -2,6 +2,11 @@
     "section1": {
         "files": [
             {
+                "url": "assets/benzeme.png",
+                "type": "image",
+                "key": "benzeme"
+            },
+            {
                 "url": "assets/cancel.png",
                 "type": "image",
                 "key": "cancel"

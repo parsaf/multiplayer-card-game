@@ -222,7 +222,7 @@ export default class Lobby extends Phaser.Scene {
 		this.enterNamePrefab.destroy();
 
 		fetchRetry(SERVER_URL + "/join?" + qs.stringify({name: this.playerName})).then((res) => {
-			console.log("made request");
+			console.log("join response");
 			if (!res.ok) {
 				throw new Error(`HTTP error! Status: ${res.status}`);
 			}

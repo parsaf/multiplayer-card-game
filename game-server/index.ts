@@ -20,6 +20,7 @@ app.get("/api/join", handlers.getPlayerJoinHandler(io));
 app.get("/api/start", handlers.getStartTurnsHandler(io));
 app.get("/api/game-over", handlers.gameOverHandler(io));
 app.get("/api/push", handlers.pushHandler(io));
+app.get("/api/rage", handlers.rageHandler(io));
 
 app.get('/admin', (req, res) => {
     res.render('admin', { players: handlers.players, gameStart: handlers.gameStarted })

@@ -63,6 +63,12 @@ export default class Preload extends Phaser.Scene {
 		this.editorCreate();
 
 		this.load.pack("asset-pack", assetPackUrl);
+		
+		// load audio sprite
+		this.load.audioSprite("sfx", "assets/audio/sfx.json", [
+			"assets/audio/sfx.mp3",
+		])
+
 	}
 
 	create() {

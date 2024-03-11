@@ -10,7 +10,7 @@ export interface ServerEvents {
 	"team-selection": (payload: TeamSelectionPayload) => void;
 	"game-start": (gameStart: boolean, callback: (start: boolean) => void) => void;
 	"game-over": (gameOver: boolean, callback: (over: boolean) => void) => void;
-	// "new-round": (payload: NewRoundPayload, callback: () => void) => void;
+	"play-sound": (payload: PlaySoundPayload, callback: (ack: boolean) => void) => void;
 }
 
 export interface SocketError {
@@ -67,6 +67,7 @@ export interface NewTurnPayload {
 	team1Score: number;
 	team2Score: number;
 	gameOver: boolean;
+	aduio?: string;
 }
 
 export interface TurnCompletePayload {
@@ -76,9 +77,7 @@ export interface TurnCompletePayload {
 	turn: number; // 1 through 6
 }
 
-// export interface NewRoundPayload {
-// 	round: number; // 1 through 9
-// 	lastWinnerDetails?: PlayerDetails; // winning player's order
-// 	team1Score: number;
-// 	team2Score: number;
-// }
+export interface PlaySoundPayload {
+	playerOrder?: number;
+	audio: string;
+}

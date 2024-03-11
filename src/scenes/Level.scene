@@ -139,6 +139,33 @@
             "isStroked": true,
             "width": 714,
             "height": 128
+        },
+        {
+            "prefabId": "f5a8ed12-ae87-4566-8c84-5235560cc2d0",
+            "id": "e1c28348-46ca-481d-a381-ad9dca567f75",
+            "unlock": [
+                "x",
+                "y",
+                "hitArea.shape",
+                "hitArea.x",
+                "hitArea.y",
+                "hitArea.width",
+                "hitArea.height",
+                "hitArea.radius",
+                "hitArea.points",
+                "hitArea.alphaTolerance",
+                "visible"
+            ],
+            "label": "rage",
+            "scope": "CLASS",
+            "hitArea.shape": "RECTANGLE",
+            "hitArea.x": -64,
+            "hitArea.y": -67,
+            "hitArea.width": 128,
+            "hitArea.height": 134,
+            "x": 73,
+            "y": 976,
+            "visible": false
         }
     ],
     "plainObjects": [],

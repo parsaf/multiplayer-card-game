@@ -1,0 +1,27 @@
+{
+    "resources": [
+        "./assets/audio/sfx.mp3"
+      ],
+      "spritemap": {
+        "ace-heart": {
+          "start": 17.5,
+          "end": 21.5,
+          "loop": false
+        },
+        "jack": {
+          "start": 32,
+          "end": 35,
+          "loop": false
+        },
+        "seven": {
+          "start": 77,
+          "end": 83,
+          "loop": false
+        },
+        "rage": {
+          "start": 47,
+          "end": 55,
+          "loop": false
+        }
+    }
+}

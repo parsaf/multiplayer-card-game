@@ -10,12 +10,18 @@ import Phaser from "phaser";
 import RedPlayer from "./RedPlayer";
 import BluePlayer from "./BluePlayer";
 import DropZonePrefab from "./DropZonePrefab";
+import Rage from "./Rage";
 /* START-USER-IMPORTS */
 import HandCard, { CARD_HEIGHT, CARD_WIDTH } from "./HandCard";
 import type * as Events from "../events/SocketEvents";
 import RexUIPlugin from 'phaser3-rex-plugins/templates/ui/ui-plugin.js';
 import { io, Socket } from "socket.io-client";
+import qs from "qs";
+import fetchBuilder from "fetch-retry";
 import { v4 as uuidv4 } from "uuid";
+
+
+const fetchRetry = fetchBuilder(fetch);
 
 type OtherPlayer = RedPlayer | BluePlayer;
 /* END-USER-IMPORTS */
@@ -78,6 +84,13 @@ export default class Level extends Phaser.Scene {
 		myTurnStatus.strokeColor = 589614;
 		myTurnStatus.lineWidth = 6;
 
+		// rage
+		const rage = new Rage(this, 73, 976);
+		this.add.existing(rage);
+		rage.removeInteractive();
+		rage.setInteractive(new Phaser.Geom.Rectangle(-64, -67, 128, 134), Phaser.Geom.Rectangle.Contains);
+		rage.visible = false;
+
 		this.opponent_2 = opponent_2;
 		this.team_mate_1 = team_mate_1;
 		this.team_mate_2 = team_mate_2;
@@ -87,6 +100,7 @@ export default class Level extends Phaser.Scene {
 		this.theirScore = theirScore;
 		this.ourScore = ourScore;
 		this.myTurnStatus = myTurnStatus;
+		this.rage = rage;
 
 		this.events.emit("scene-awake");
 	}
@@ -100,6 +114,7 @@ export default class Level extends Phaser.Scene {
 	private theirScore!: Phaser.GameObjects.Text;
 	private ourScore!: Phaser.GameObjects.Text;
 	private myTurnStatus!: Phaser.GameObjects.Rectangle;
+	private rage!: Rage;
 
 	/* START-USER-CODE */
 	rexUI!: RexUIPlugin;
@@ -110,6 +125,7 @@ export default class Level extends Phaser.Scene {
 	private playerName!: string;
 	private myTeam!: Events.Team;
 	private playersByOrder = new Map<number, OtherPlayer>();
+	private ragingPlayer?: Rage;
 
 	// game state
 	private cardPile!: RexUIPlugin.GridSizer;
@@ -117,6 +133,7 @@ export default class Level extends Phaser.Scene {
 	private team2Score: number = 0;
 	private round: number = 1;
 	private completedTurns: number = 0;
+	private hasRage: boolean = false;
 
 	init(data: {
 		playerId: string,
@@ -135,15 +152,15 @@ export default class Level extends Phaser.Scene {
 		this.editorCreate();
 		console.log("create");
 
-		// TODO get game state
-		// this.socket.on("connect", () => {
-		// });
 		this.input.on("dragstart", this.dragStartHandler, this);
 		this.input.on("drag", this.dragHandler, this);
 		this.input.on("dragend", this.dragEndHandler, this);
+		// set rage clickable
+		this.rage.on("pointerdown", this.rageClickHandler, this);
 		this.emitGetHand();
 		this.newTurnListener();
 		this.gameOverListener();
+		this.playSoundListener();
 	}
 
 	dealPlayerHand(handVals: number[]) {
@@ -273,7 +290,6 @@ export default class Level extends Phaser.Scene {
 				lastPlayer.setTurnStatus(false);
 			},
 		});
-		this.completedTurns = payload.lastTurn;
 	}
 
 	////////// socket event listener //////////
@@ -292,7 +308,15 @@ export default class Level extends Phaser.Scene {
 				this.completeRound(payload);
 			}
 			this.performLastTurn(payload);
-
+			this.completedTurns = payload.lastTurn;
+			if (this.completedTurns === 1 && this.round === 1) {
+				this.hasRage = true;
+				this.rage.setVisible(true);
+			}
+			if (payload.aduio) {
+				this.sound.removeAll();
+				this.sound.playAudioSprite("sfx", payload.aduio);
+			}
 			// set turn status for current turn
 			if (!payload.nextPlayer) {
 				return;
@@ -312,9 +336,49 @@ export default class Level extends Phaser.Scene {
 
 	}
 
+	playSoundListener() {
+		this.socket.on("play-sound", (payload, callback) => {
+			console.log("play sound", payload);
+			this.sound.removeAll();
+			const sound = this.sound.addAudioSprite("sfx");
+
+			const rageDestroyer = () => {
+				console.log("end of sound event");
+				if (this.ragingPlayer?.active)	{
+					console.log("destroying rage after sound");
+					this.ragingPlayer.destroy();
+				}
+				// make rage button active again
+				this.rage.setInteractive();
+			};
+			sound.once(Phaser.Sound.Events.COMPLETE, rageDestroyer);
+			sound.once(Phaser.Sound.Events.DESTROY, rageDestroyer);
+
+			const played = sound.play(payload.audio);
+			if (played && payload.playerOrder && payload.playerOrder !== this.myOrder) {
+				// set rage button deactive
+				this.rage.disableInteractive();
+				const player = this.playersByOrder.get(payload.playerOrder);
+				if (this.ragingPlayer?.active)	{
+					console.log("destroying previous rage before creating new one");
+					this.ragingPlayer.destroy();
+				}
+				this.ragingPlayer = new Rage(this, player!.x, player!.y);
+				this.add.existing(this.ragingPlayer);
+				this.ragingPlayer.setVisible(true);
+				this.ragingPlayer.removeInteractive();
+			}
+
+			callback(true);
+		});
+	}
+
 	////////// card drag event handlers //////////
 	dragStartHandler(pointer: Phaser.Input.Pointer, obj: Phaser.GameObjects.Image) {
 		console.log("drag start");
+
+		this.rage.setVisible(false);
+
 		obj.setOrigin(0.5, 1);
 		this.children.bringToTop(obj)
 		this.dropZone.setVisible(true);
@@ -357,6 +421,23 @@ export default class Level extends Phaser.Scene {
 			this.completeMyTurn((obj as HandCard).value );
 
 		}
+		if (this.hasRage) {
+			this.rage.setVisible(true);
+		}
+	}
+
+	rageClickHandler(pointer: Phaser.Input.Pointer, localX: number, localY: number, event: Phaser.Types.Input.EventData) {
+		console.log("rage clicked");
+
+		fetchRetry('/api/rage?' + qs.stringify({playerId: this.playerId})).then((res) => {
+			console.log("rage response", res);
+			if (!res.ok) {
+				throw new Error(`HTTP error! Status: ${res.status}`);
+			}
+			this.rage.removeInteractive();
+			this.rage.setVisible(false);
+			this.hasRage = false;
+		});
 	}
 
 	setHandCardsInteractive(on: boolean) {

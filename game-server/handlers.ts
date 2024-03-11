@@ -84,7 +84,9 @@ export class GameHandlers {
         this.emitTeamSelection = this.emitTeamSelection.bind(this);
         this.emitGameStart = this.emitGameStart.bind(this);
         this.findWinningCard = this.findWinningCard.bind(this);
+        this.chooseAudio = this.chooseAudio.bind(this);
         this.gameOverHandler = this.gameOverHandler.bind(this);
+        this.rageHandler = this.rageHandler.bind(this);
     }
 
     ////////////////// REST handler //////////////////
@@ -198,6 +200,32 @@ export class GameHandlers {
             response.redirect('/admin');
         }
     }
+
+
+
+	rageHandler(io: Server<events.ClientEvents, events.ServerEvents>): RequestHandler {
+        return (request: Request, response: Response) => {
+            console.log("rage handler");
+            const { playerId } = request.query;
+            console.log("rage handler conidiitons", playerId, this.playerById.has(playerId!.toString()));
+            if (playerId && this.playerById.has(playerId.toString())) {
+                const player = this.playerById.get(playerId.toString());
+                console.log("rage sound played by player", player?.name);
+                // broadcast rage sound to clients
+                const payload: events.PlaySoundPayload = {
+                    playerOrder: player?.order,
+                    audio: "rage",
+                };
+                io.timeout(EMIT_TIMEOUT).emit("play-sound", payload, (err, received) => {
+                    if (err) {
+                        console.log("play-sound some clients didn't acknowledge");
+                    }
+                    console.log("play-sound event acknowledged");
+                });
+            }
+            response.status(200).json({ message: "Rage emit" });
+        }
+	}
 
     ////////////////// event handlers //////////////////
     playerReadyHandler(
@@ -458,6 +486,7 @@ export class GameHandlers {
             team2Score: this.team2Score,
             cardsPlayed: this.cardsPlayed.map((cardPlayed) => cardPlayed.card.value),
             gameOver: this.round === ROUNDS_PER_GAME ? true : false,
+            aduio: this.chooseAudio(),
         };
         this.emitNewTurn(io, payload);
         if (this.completedTurns === this.playerCount) {
@@ -465,7 +494,7 @@ export class GameHandlers {
             this.round += 1;
 
             // calculate scores and decide next player
-            const winningCard = this.findWinningCard();
+            const winningCard = this.findWinningCard(this.cardsPlayed);
             if (winningCard.player.team === "TEAM_1") {
                 this.team1Score += 1;
             } else {
@@ -492,11 +521,40 @@ export class GameHandlers {
         }
     }
 
-    findWinningCard(): CardPlayed {
-        console.log('finding winning card in cards played: ', this.cardsPlayed.map((cardPlayed) => [cardPlayed.card.faceValue, cardPlayed.card.suit]));
-        const handSuit = this.cardsPlayed[0].card.suit;
+    chooseAudio(): string | undefined {
+        if (this.cardsPlayed.length < 2) {
+            return;
+        }
 
-        let winningCard = this.cardsPlayed[0];
+        let result: string | undefined = undefined;
+
+        // find the winning card in cards played minus the last card
+        const winningCard = this.findWinningCard(this.cardsPlayed.slice(0, this.cardsPlayed.length - 1));
+        
+        // if last card beats winning card
+        if (isCardBeaten(winningCard, this.cardsPlayed[this.cardsPlayed.length - 1], this.trumpSuit!)) {
+            // a jack was played
+            if (this.cardsPlayed[this.cardsPlayed.length - 1].card.faceValue === 11) {
+                result = "jack";
+            }
+            // a seven was played
+            else if (this.cardsPlayed[this.cardsPlayed.length - 1].card.faceValue === 7) {
+                result = "seven";
+            }
+
+            // ace of heart was beaten
+            if (winningCard.card.faceValue === 14 && winningCard.card.suit === Suit.HEART) {
+                result = "ace-heart";
+            }
+        }
+        return result;
+    }
+
+    findWinningCard(cards : CardPlayed[]): CardPlayed {
+        console.log('finding winning card in cards played: ', cards.map((cardPlayed) => [cardPlayed.card.faceValue, cardPlayed.card.suit]));
+        const handSuit = cards[0].card.suit;
+
+        let winningCard = cards[0];
 
         // if the first card is a joker, it wins
         if (handSuit === Suit.JOKER) {
@@ -505,7 +563,7 @@ export class GameHandlers {
         }
 
         // for other first cards, find the highest card of the same suit or the highest card of the trump suit
-        for (const cardPlayed of this.cardsPlayed) {
+        for (const cardPlayed of cards) {
 
             console.log('comparing card: ', cardPlayed.card.faceValue, cardPlayed.card.suit);
             
