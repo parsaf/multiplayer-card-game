@@ -198,7 +198,7 @@ export default class Level extends Phaser.Scene {
 		const playerObjects: OtherPlayer[] = [this.opponent_1, this.team_mate_1, this.opponent_2, this.team_mate_2, this.opponent_3];
 
 		this.myOrder = playerOrder;
-		playerDetails.sort((detail) => detail.order);
+		playerDetails.sort((a,b) => a.order - b.order);
 
 		for (let i = 0; i < playerDetails.length - 1; i++) {
 			const idx = (playerOrder + i) % playerDetails.length;
